@@ -50,7 +50,7 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="lg" className="text-lg px-8">
+              <Button variant="hero" size="lg" className="text-lg px-8" onClick={() => window.location.href = '/auth'}>
                 Start 7-Day Free Trial
                 <ArrowRight className="h-5 w-5" />
               </Button>

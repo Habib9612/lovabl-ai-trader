@@ -30,10 +30,10 @@ const Navigation = () => {
             <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
               About
             </a>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/auth'}>
               Login
             </Button>
-            <Button variant="hero" size="sm">
+            <Button variant="hero" size="sm" onClick={() => window.location.href = '/auth'}>
               Start Free Trial
             </Button>
           </div>
@@ -64,10 +64,10 @@ const Navigation = () => {
                 About
               </a>
               <div className="flex space-x-2 px-3 pt-2">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => window.location.href = '/auth'}>
                   Login
                 </Button>
-                <Button variant="hero" size="sm" className="flex-1">
+                <Button variant="hero" size="sm" className="flex-1" onClick={() => window.location.href = '/auth'}>
                   Start Trial
                 </Button>
               </div>
