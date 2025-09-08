@@ -1,5 +1,6 @@
 import React from 'react';
 import { EnhancedTradingChart } from '@/components/charts/EnhancedTradingChart';
+import { CompanyFundamentals } from '@/components/trading/CompanyFundamentals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Activity, BarChart3, Camera } from 'lucide-react';
