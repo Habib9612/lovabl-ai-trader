@@ -5,6 +5,7 @@ import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/pages/dashboard/DashboardHome';
+import TradingAnalysis from '@/pages/dashboard/TradingAnalysis';
 import NotFound from '@/pages/NotFound';
 
 // Protected Route Component
@@ -71,7 +72,7 @@ function App() {
             }>
               <Route index element={<DashboardHome />} />
               <Route path="portfolio" element={<div>Portfolio Page - Coming Soon</div>} />
-              <Route path="trading" element={<div>Trading Page - Coming Soon</div>} />
+              <Route path="trading" element={<TradingAnalysis />} />
               <Route path="ai-analytics" element={<div>AI Analytics Page - Coming Soon</div>} />
               <Route path="patterns" element={<div>Pattern Recognition Page - Coming Soon</div>} />
               <Route path="signals" element={<div>Signals Page - Coming Soon</div>} />
