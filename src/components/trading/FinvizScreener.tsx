@@ -83,16 +83,23 @@ export const FinvizScreener = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-primary">FinViz Stock Screener</h2>
-          <p className="text-muted-foreground">Professional stock screening with real-time market data</p>
+          <h2 className="text-2xl font-bold text-primary">Live Finviz Stock Screener</h2>
+          <p className="text-muted-foreground">Professional stock screening with real-time Finviz data</p>
         </div>
         <div className="flex items-center space-x-2">
           <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
-            Live Data
+            <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+            Live Finviz Data
           </Badge>
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            FinViz
-          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open('https://finviz.com/screener.ashx', '_blank')}
+            className="text-primary"
+          >
+            <Search className="w-4 h-4 mr-2" />
+            Full Finviz Screener
+          </Button>
         </div>
       </div>
 
@@ -219,7 +226,15 @@ export const FinvizScreener = () => {
 
                 {filteredData.length === 0 && !isLoading && (
                   <div className="text-center py-8 text-muted-foreground">
-                    No stocks found matching your criteria
+                    <p>No stocks found matching your criteria</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => window.open('https://finviz.com/screener.ashx', '_blank')}
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      Try Advanced Finviz Screener
+                    </Button>
                   </div>
                 )}
               </div>
