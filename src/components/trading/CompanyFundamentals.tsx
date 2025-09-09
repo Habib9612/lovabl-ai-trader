@@ -43,12 +43,12 @@ export const CompanyFundamentals = ({ symbol }: CompanyFundamentalsProps) => {
           getCompanyRating(symbol)
         ]);
 
-        setProfile(profileData[0]);
-        setRatios(ratiosData);
-        setKeyMetrics(metricsData);
-        setIncomeStatement(incomeData);
-        setDcf(dcfData[0]);
-        setRating(ratingData[0]);
+        setProfile(profileData?.[0] || null);
+        setRatios(ratiosData || []);
+        setKeyMetrics(metricsData || []);
+        setIncomeStatement(incomeData || []);
+        setDcf(dcfData?.[0] || null);
+        setRating(ratingData?.[0] || null);
       } catch (err) {
         console.error('Error fetching fundamentals:', err);
       }

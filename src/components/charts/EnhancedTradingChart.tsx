@@ -84,14 +84,22 @@ export const EnhancedTradingChart = () => {
         
         // Get technical analysis
         const prices = stockData.results.map((item: any) => item.c);
-        const techAnalysis = await getTechnicalAnalysis(ticker, prices);
-        setTechnicalIndicators(techAnalysis.technical_indicators);
+        try {
+          const techAnalysis = await getTechnicalAnalysis(ticker, prices);
+          setTechnicalIndicators(techAnalysis?.technical_indicators || null);
+        } catch (error) {
+          console.error('Technical analysis error:', error);
+        }
       }
       
       // Fetch dividends
-      const dividendData = await getDividends(ticker);
-      if (dividendData?.results) {
-        setDividends(dividendData.results);
+      try {
+        const dividendData = await getDividends(ticker);
+        if (dividendData?.results) {
+          setDividends(dividendData.results);
+        }
+      } catch (error) {
+        console.error('Dividend data error:', error);
       }
       
     } catch (error) {
@@ -108,9 +116,11 @@ export const EnhancedTradingChart = () => {
 
     try {
       const result = await captureAndAnalyze('trading-chart', ticker);
-      setAnalysis(result.analysis);
+      setAnalysis(result?.analysis || 'Analysis failed');
+      toast.success('Chart analysis completed');
     } catch (error) {
       console.error('Error analyzing chart:', error);
+      toast.error('Chart analysis failed: ' + (error as Error).message);
     }
   };
 
