@@ -5,6 +5,8 @@ import { CompanyFundamentals } from '@/components/trading/CompanyFundamentals';
 import { ImageChartAnalysis } from '@/components/trading/ImageChartAnalysis';
 import { AITraining } from '@/components/trading/AITraining';
 import { TradingJournal } from '@/components/trading/TradingJournal';
+import { FinvizScreener } from '@/components/trading/FinvizScreener';
+import { FinvizChart } from '@/components/trading/FinvizChart';
 
 const TradingAnalysis = () => {
   return (
@@ -18,8 +20,10 @@ const TradingAnalysis = () => {
       </div>
 
       <Tabs defaultValue="charts" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="charts">Live Charts</TabsTrigger>
+          <TabsTrigger value="finviz-chart">FinViz Chart</TabsTrigger>
+          <TabsTrigger value="screener">Stock Screener</TabsTrigger>
           <TabsTrigger value="fundamentals">Fundamentals</TabsTrigger>
           <TabsTrigger value="image-analysis">Image Analysis</TabsTrigger>
           <TabsTrigger value="ai-training">AI Training</TabsTrigger>
@@ -28,6 +32,14 @@ const TradingAnalysis = () => {
 
         <TabsContent value="charts" className="space-y-6">
           <EnhancedTradingChart />
+        </TabsContent>
+
+        <TabsContent value="finviz-chart" className="space-y-6">
+          <FinvizChart />
+        </TabsContent>
+
+        <TabsContent value="screener" className="space-y-6">
+          <FinvizScreener />
         </TabsContent>
 
         <TabsContent value="fundamentals" className="space-y-6">
