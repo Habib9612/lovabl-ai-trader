@@ -30,7 +30,29 @@ export const EnhancedTradingChart = () => {
   const [dividends, setDividends] = useState<any[]>([]);
   const [analysis, setAnalysis] = useState<any>(null);
   const [technicalIndicators, setTechnicalIndicators] = useState<any>(null);
+  const [demoMode, setDemoMode] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+
+  // Demo data for testing
+  const generateDemoData = (): ChartData[] => {
+    const data: ChartData[] = [];
+    const basePrice = 150;
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (29 - i));
+      const price = basePrice + Math.random() * 20 - 10;
+      data.push({
+        date: date.toLocaleDateString(),
+        price: parseFloat(price.toFixed(2)),
+        volume: Math.floor(Math.random() * 1000000),
+        high: price + Math.random() * 5,
+        low: price - Math.random() * 5,
+        open: price + Math.random() * 2 - 1,
+        close: price
+      });
+    }
+    return data;
+  };
 
   const { loading: polygonLoading, getStockData, getDividends } = usePolygonData();
   const { loading: analysisLoading, captureAndAnalyze } = useChartAnalysis();
@@ -63,6 +85,23 @@ export const EnhancedTradingChart = () => {
   };
 
   const fetchData = async () => {
+    if (demoMode) {
+      // Use demo data for testing
+      const demoData = generateDemoData();
+      setChartData(demoData);
+      setTechnicalIndicators({
+        rsi: 45.6,
+        macd: { macd: 0.23, signal: 0.18, histogram: 0.05 },
+        bollinger: { upper: 155.20, middle: 150.00, lower: 144.80 }
+      });
+      setDividends([
+        { cash_amount: 0.25, ex_dividend_date: '2024-02-15', pay_date: '2024-02-22', frequency: 4 },
+        { cash_amount: 0.25, ex_dividend_date: '2024-05-15', pay_date: '2024-05-22', frequency: 4 }
+      ]);
+      toast.success('Demo data loaded successfully');
+      return;
+    }
+
     try {
       const { from, to, timespan } = getDateRange(timeframe);
       
@@ -104,7 +143,7 @@ export const EnhancedTradingChart = () => {
       
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to fetch market data');
+      toast.error('Failed to fetch market data. Try demo mode for testing.');
     }
   };
 
@@ -125,6 +164,8 @@ export const EnhancedTradingChart = () => {
   };
 
   useEffect(() => {
+    // Load demo data by default for immediate testing
+    setDemoMode(true);
     fetchData();
   }, [ticker, timeframe]);
 
@@ -161,6 +202,18 @@ export const EnhancedTradingChart = () => {
             </div>
             
             <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setDemoMode(!demoMode);
+                  if (!demoMode) {
+                    fetchData();
+                  }
+                }}
+                variant={demoMode ? "default" : "outline"}
+                size="sm"
+              >
+                {demoMode ? 'Demo Mode' : 'Enable Demo'}
+              </Button>
               <Button
                 onClick={handleAnalyzeChart}
                 disabled={analysisLoading || !chartData.length}

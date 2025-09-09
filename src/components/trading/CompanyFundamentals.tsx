@@ -8,9 +8,10 @@ import { TrendingUp, TrendingDown, Building2, DollarSign, BarChart3, Users, Cale
 
 interface CompanyFundamentalsProps {
   symbol: string;
+  demoMode?: boolean;
 }
 
-export const CompanyFundamentals = ({ symbol }: CompanyFundamentalsProps) => {
+export const CompanyFundamentals = ({ symbol, demoMode = false }: CompanyFundamentalsProps) => {
   const { 
     loading, 
     error, 
@@ -29,10 +30,92 @@ export const CompanyFundamentals = ({ symbol }: CompanyFundamentalsProps) => {
   const [dcf, setDcf] = useState<any>(null);
   const [rating, setRating] = useState<any>(null);
 
+  // Demo data generator
+  const generateDemoData = () => {
+    return {
+      profile: {
+        symbol,
+        companyName: `${symbol} Inc.`,
+        price: 150.25,
+        beta: 1.2,
+        mktCap: 2500000000,
+        description: `${symbol} is a leading technology company.`,
+        ceo: 'John Doe',
+        sector: 'Technology',
+        industry: 'Software',
+        exchange: 'NASDAQ',
+        website: `https://www.${symbol.toLowerCase()}.com`,
+        fullTimeEmployees: '50000',
+        country: 'US',
+        volAvg: 45000000,
+        lastDiv: 0.25,
+        range: '$130.50 - $175.80',
+        changes: 2.45,
+        changesPercentage: 1.65,
+        currency: 'USD',
+        ipoDate: '2010-12-13',
+        image: null
+      } as FMPCompanyProfile,
+      ratios: [{
+        currentRatio: 2.1,
+        quickRatio: 1.8,
+        returnOnEquity: 0.18,
+        returnOnAssets: 0.12,
+        debtEquityRatio: 0.3,
+        grossProfitMargin: 0.38,
+        operatingProfitMargin: 0.25,
+        netProfitMargin: 0.21,
+        debtRatio: 0.25,
+        interestCoverage: 12.5,
+        cashRatio: 0.85
+      } as FMPFinancialRatios],
+      keyMetrics: [{
+        peRatio: 25.5,
+        pbRatio: 3.2,
+        priceToSalesRatio: 6.8,
+        enterpriseValueOverEBITDA: 18.2,
+        revenuePerShare: 22.15,
+        bookValuePerShare: 47.30,
+        freeCashFlowPerShare: 6.85,
+        cashPerShare: 12.40,
+        roic: 0.15,
+        roe: 0.18,
+        marketCap: 2500000000,
+        dividendYield: 0.0167
+      } as FMPKeyMetrics],
+      incomeStatement: [{
+        revenue: 365000000000,
+        grossProfit: 152000000000,
+        netIncome: 95000000000,
+        eps: 6.05,
+        date: '2023-12-31',
+        symbol,
+        period: 'FY'
+      } as FMPIncomeStatement],
+      dcf: { dcf: 165.50 },
+      rating: { 
+        rating: 'A+',
+        ratingScore: 4.5,
+        ratingRecommendation: 'Strong Buy'
+      }
+    };
+  };
+
   useEffect(() => {
     if (!symbol) return;
 
     const fetchData = async () => {
+      if (demoMode) {
+        const demoData = generateDemoData();
+        setProfile(demoData.profile);
+        setRatios(demoData.ratios);
+        setKeyMetrics(demoData.keyMetrics);
+        setIncomeStatement(demoData.incomeStatement);
+        setDcf(demoData.dcf);
+        setRating(demoData.rating);
+        return;
+      }
+
       try {
         const [profileData, ratiosData, metricsData, incomeData, dcfData, ratingData] = await Promise.all([
           getCompanyProfile(symbol),
@@ -55,7 +138,7 @@ export const CompanyFundamentals = ({ symbol }: CompanyFundamentalsProps) => {
     };
 
     fetchData();
-  }, [symbol]);
+  }, [symbol, demoMode]);
 
   const formatCurrency = (value: number) => {
     if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;

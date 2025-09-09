@@ -140,6 +140,9 @@ const TradingAnalysis = () => {
       {/* Main Trading Chart */}
       <EnhancedTradingChart />
 
+      {/* Company Fundamentals */}
+      <CompanyFundamentals symbol="AAPL" demoMode={true} />
+
       {/* How to Use */}
       <Card>
         <CardHeader>
