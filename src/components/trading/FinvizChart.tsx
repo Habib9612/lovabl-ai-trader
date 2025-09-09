@@ -109,12 +109,12 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
               value={inputSymbol}
               onChange={(e) => setInputSymbol(e.target.value.toUpperCase())}
               onKeyPress={(e) => e.key === 'Enter' && handleSymbolChange()}
-              className="pl-10 w-48 rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 w-48 rounded-xl border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
             />
           </div>
           <Button 
             onClick={handleSymbolChange} 
-            className="bg-gradient-primary hover:shadow-lg transition-all px-6 rounded-xl"
+            className="bg-gradient-primary hover:shadow-lg transition-all px-6 rounded-xl shadow-md"
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             Load Chart

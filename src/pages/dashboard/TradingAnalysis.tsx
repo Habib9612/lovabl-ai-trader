@@ -75,8 +75,8 @@ const TradingAnalysis = () => {
           </TabsList>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-          <TabsContent value="finviz-chart" className="p-8 m-0">
+        <div className="bg-white/90 backdrop-blur rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
+          <TabsContent value="finviz-chart" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
             <FinvizChart />
           </TabsContent>
 
