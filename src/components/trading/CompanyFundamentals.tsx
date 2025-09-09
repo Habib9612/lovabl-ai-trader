@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFMPData, FMPCompanyProfile, FMPFinancialRatios, FMPKeyMetrics, FMPIncomeStatement } from '@/hooks/useFMPData';
-import { TrendingUp, TrendingDown, Building2, DollarSign, BarChart3, Users, Calendar, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Building2, DollarSign, BarChart3, Users, Calendar, Target, Brain } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CompanyFundamentalsProps {
   symbol: string;
@@ -29,6 +32,8 @@ export const CompanyFundamentals = ({ symbol, demoMode = false }: CompanyFundame
   const [incomeStatement, setIncomeStatement] = useState<FMPIncomeStatement[]>([]);
   const [dcf, setDcf] = useState<any>(null);
   const [rating, setRating] = useState<any>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
 
   // Demo data generator
   const generateDemoData = () => {
@@ -151,6 +156,42 @@ export const CompanyFundamentals = ({ symbol, demoMode = false }: CompanyFundame
   const formatPercentage = (value: number) => `${(value * 100).toFixed(2)}%`;
   const formatNumber = (value: number) => value?.toFixed(2) || 'N/A';
 
+  const analyzeWithGemini = async () => {
+    if (!profile) return;
+    
+    setAnalyzingWithAI(true);
+    try {
+      const fundamentalData = {
+        profile,
+        ratios: currentRatio,
+        keyMetrics: currentMetrics,
+        incomeStatement: currentIncome,
+        dcf,
+        rating
+      };
+
+      const { data, error } = await supabase.functions.invoke('gemini-ai-analysis', {
+        body: {
+          type: 'fundamentals',
+          data: fundamentalData,
+          prompt: `Provide a comprehensive fundamental analysis for ${profile.companyName} (${symbol})`
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setAiAnalysis(data.analysis);
+      toast.success('AI analysis completed!');
+    } catch (error) {
+      console.error('Error analyzing with Gemini:', error);
+      toast.error('Failed to analyze with AI: ' + (error as Error).message);
+    } finally {
+      setAnalyzingWithAI(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -241,12 +282,13 @@ export const CompanyFundamentals = ({ symbol, demoMode = false }: CompanyFundame
 
       {/* Financial Data Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="ratios">Ratios</TabsTrigger>
           <TabsTrigger value="metrics">Key Metrics</TabsTrigger>
           <TabsTrigger value="income">Income</TabsTrigger>
           <TabsTrigger value="valuation">Valuation</TabsTrigger>
+          <TabsTrigger value="ai-analysis">AI Analysis</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -647,6 +689,53 @@ export const CompanyFundamentals = ({ symbol, demoMode = false }: CompanyFundame
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="ai-analysis" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  Gemini AI Fundamental Analysis
+                </CardTitle>
+                <Button
+                  onClick={analyzeWithGemini}
+                  disabled={analyzingWithAI}
+                  variant="outline"
+                >
+                  {analyzingWithAI ? (
+                    <>
+                      <Brain className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4 mr-2" />
+                      Analyze with AI
+                    </>
+                  )}
+                </Button>
+              </div>
+              <CardDescription>
+                Get comprehensive AI-powered insights on the company's financial health, growth prospects, and investment potential.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {aiAnalysis ? (
+                <div className="prose prose-sm max-w-none">
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm font-mono">{aiAnalysis}</pre>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Click "Analyze with AI" to get comprehensive fundamental analysis powered by Gemini AI</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

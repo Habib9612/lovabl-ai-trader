@@ -142,12 +142,22 @@ export const AITraining = () => {
         });
       }, 500);
 
-      // Simulate API call to train AI
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
       const strategyName = selectedStrategy === 'custom' 
         ? customStrategyName 
         : predefinedStrategies.find(s => s.id === selectedStrategy)?.name || 'Unknown Strategy';
+
+      // Use Gemini AI for training analysis
+      const { data, error } = await supabase.functions.invoke('gemini-ai-analysis', {
+        body: {
+          type: 'training',
+          data: documents.filter(d => d.processed),
+          prompt: `Train AI strategy for ${strategyName}: ${selectedStrategy === 'custom' ? customStrategyDescription : predefinedStrategies.find(s => s.id === selectedStrategy)?.description}`
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       const newStrategy: TrainingStrategy = {
         id: Math.random().toString(36).substr(2, 9),

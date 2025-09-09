@@ -70,3 +70,6 @@ verify_jwt = false
 
 [functions.finviz-data]
 verify_jwt = false
+
+[functions.gemini-ai-analysis]
+verify_jwt = false
