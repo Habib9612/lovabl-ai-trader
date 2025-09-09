@@ -10,6 +10,7 @@ import Portfolio from '@/pages/dashboard/Portfolio';
 import Education from '@/pages/dashboard/Education';
 import Watchlist from '@/pages/dashboard/Watchlist';
 import AIAnalytics from '@/pages/dashboard/AIAnalytics';
+import { AIAnalysisDetails } from '@/pages/dashboard/AIAnalysisDetails';
 import Settings from '@/pages/dashboard/Settings';
 import NotFound from '@/pages/NotFound';
 
@@ -78,6 +79,7 @@ function App() {
               <Route index element={<DashboardHome />} />
               <Route path="portfolio" element={<Portfolio />} />
               <Route path="trading" element={<TradingAnalysis />} />
+              <Route path="ai-analysis" element={<AIAnalysisDetails />} />
               <Route path="ai-analytics" element={<AIAnalytics />} />
               <Route path="patterns" element={<div>Pattern Recognition Page - Coming Soon</div>} />
               <Route path="signals" element={<div>Signals Page - Coming Soon</div>} />
