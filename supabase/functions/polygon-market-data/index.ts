@@ -47,7 +47,18 @@ serve(async (req) => {
 
   try {
     const { endpoint, ticker, multiplier = 1, timespan = 'day', from, to } = await req.json();
-    const apiKey = Deno.env.get('POLYGON_API_KEY');
+  const apiKey = Deno.env.get('POLYGON_API_KEY');
+  
+  if (!apiKey) {
+    console.error('POLYGON_API_KEY not found in environment variables');
+    return new Response(
+      JSON.stringify({ error: 'API key not configured' }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
     
     if (!apiKey) {
       throw new Error('POLYGON_API_KEY not configured');

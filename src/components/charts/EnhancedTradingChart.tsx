@@ -164,8 +164,6 @@ export const EnhancedTradingChart = () => {
   };
 
   useEffect(() => {
-    // Load demo data by default for immediate testing
-    setDemoMode(true);
     fetchData();
   }, [ticker, timeframe]);
 
