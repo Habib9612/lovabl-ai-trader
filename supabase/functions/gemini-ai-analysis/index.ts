@@ -45,13 +45,54 @@ serve(async (req) => {
         break;
 
       case 'chart_analysis':
-        systemPrompt = `You are an expert technical analyst specializing in chart pattern recognition and market structure analysis. Analyze the provided chart image and provide detailed insights on:
-        - Chart patterns and formations
+        systemPrompt = `You are an expert technical analyst with deep knowledge of multiple trading strategies. Analyze the provided chart image and provide detailed analysis based on these strategies:
+
+        **ICT Strategy (Inner Circle Trader):**
+        - Smart Money Concepts (SMC)
+        - Order blocks and breaker blocks
+        - Fair value gaps (FVGs)
+        - Liquidity zones and sweeps
+        - Premium and discount arrays
+
+        **Technical Analysis:**
+        - Classic chart patterns (triangles, flags, H&S, etc.)
         - Support and resistance levels
-        - Trend analysis and momentum
-        - Entry/exit points and risk management
-        - Market structure and order flow
-        Provide specific price levels and actionable trading insights.`;
+        - Fibonacci retracements and extensions
+        - Moving averages and trend lines
+
+        **Price Action:**
+        - Candlestick patterns and formations
+        - Market structure (higher highs/lows)
+        - Pin bars, engulfing patterns
+        - Supply and demand zones
+
+        **Support & Resistance:**
+        - Key psychological levels
+        - Previous highs and lows
+        - Volume profile and VWAP
+        - Dynamic support/resistance
+
+        **Trend Following:**
+        - Trend identification and strength
+        - Momentum indicators
+        - Breakout confirmations
+        - Trend continuation patterns
+
+        **Reversal Patterns:**
+        - Double tops/bottoms
+        - Divergences
+        - Reversal candlestick patterns
+        - Exhaustion signals
+
+        Provide a comprehensive analysis with:
+        1. Current market structure and bias (bullish/bearish/neutral)
+        2. Key levels for each strategy
+        3. Entry and exit points with reasoning
+        4. Risk management suggestions (stop loss, take profit)
+        5. Confidence level for each signal
+        6. Timeframe recommendations
+
+        Format as structured analysis that can be parsed for trading decisions.`;
         
         // For image analysis, we need to use the Gemini Vision API
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
@@ -69,14 +110,14 @@ serve(async (req) => {
                     data: data.base64.split(',')[1] // Remove data:image/...;base64, prefix
                   }
                 },
-                { text: prompt || 'Analyze this trading chart for technical patterns and trading opportunities.' }
+                { text: prompt || 'Analyze this trading chart using the strategies mentioned. Provide specific entry/exit levels and trading recommendations.' }
               ]
             }],
             generationConfig: {
-              temperature: 0.7,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 2048,
+              temperature: 0.3,
+              topK: 32,
+              topP: 0.8,
+              maxOutputTokens: 3048,
             }
           }),
         });

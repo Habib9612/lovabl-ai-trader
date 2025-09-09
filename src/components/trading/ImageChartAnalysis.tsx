@@ -32,6 +32,90 @@ interface AnalysisResult {
   timeframe?: string;
 }
 
+const parseGeminiAnalysisForStrategy = (analysisText: string, strategyId: string, strategyName: string): AnalysisResult => {
+  // Extract relevant information from Gemini analysis
+  const lowerText = analysisText.toLowerCase();
+  
+  // Determine signal based on keywords
+  let signal: 'buy' | 'sell' | 'neutral' = 'neutral';
+  const bullishKeywords = ['bullish', 'buy', 'long', 'uptrend', 'higher', 'breakout', 'support holding'];
+  const bearishKeywords = ['bearish', 'sell', 'short', 'downtrend', 'lower', 'breakdown', 'resistance holding'];
+  
+  const bullishCount = bullishKeywords.filter(word => lowerText.includes(word)).length;
+  const bearishCount = bearishKeywords.filter(word => lowerText.includes(word)).length;
+  
+  if (bullishCount > bearishCount) {
+    signal = 'buy';
+  } else if (bearishCount > bullishCount) {
+    signal = 'sell';
+  }
+  
+  // Extract confidence level (look for percentage or confidence words)
+  let confidence = 75; // default
+  const confidenceMatch = analysisText.match(/(\d+)%/);
+  if (confidenceMatch) {
+    confidence = parseInt(confidenceMatch[1]);
+  } else {
+    // Base confidence on strategy-specific keywords
+    const strategyKeywords = {
+      'ict': ['order block', 'fair value gap', 'liquidity', 'smart money'],
+      'technical': ['support', 'resistance', 'pattern', 'breakout'],
+      'price-action': ['candlestick', 'pin bar', 'engulfing', 'structure'],
+      'support-resistance': ['key level', 'psychological', 'bounce', 'hold'],
+      'trend-following': ['trend', 'momentum', 'continuation', 'direction'],
+      'reversal': ['reversal', 'divergence', 'exhaustion', 'turn']
+    };
+    
+    const keywords = strategyKeywords[strategyId as keyof typeof strategyKeywords] || [];
+    const keywordCount = keywords.filter(word => lowerText.includes(word)).length;
+    confidence = Math.min(95, 60 + (keywordCount * 10));
+  }
+  
+  // Extract price levels (look for numbers that could be prices)
+  const priceMatches = analysisText.match(/\$?(\d+(?:\.\d{2})?)/g);
+  const prices = priceMatches ? priceMatches.map(p => parseFloat(p.replace('$', ''))).filter(p => p > 10) : [];
+  
+  let entryPrice, stopLoss, takeProfit;
+  if (prices.length >= 3) {
+    prices.sort((a, b) => a - b);
+    if (signal === 'buy') {
+      entryPrice = prices[Math.floor(prices.length * 0.3)];
+      stopLoss = prices[0];
+      takeProfit = prices[prices.length - 1];
+    } else {
+      entryPrice = prices[Math.floor(prices.length * 0.7)];
+      stopLoss = prices[prices.length - 1];
+      takeProfit = prices[0];
+    }
+  }
+  
+  // Extract key levels
+  const keyLevels: string[] = [];
+  const levelMatches = analysisText.match(/(?:level|support|resistance).*?(\d+(?:\.\d{2})?)/gi);
+  if (levelMatches) {
+    levelMatches.slice(0, 3).forEach(match => {
+      const price = match.match(/(\d+(?:\.\d{2})?)/);
+      if (price) keyLevels.push(`$${price[1]}`);
+    });
+  }
+  
+  // Extract timeframe
+  const timeframeMatch = analysisText.match(/(1H|4H|1D|1W|15M|5M|daily|hourly|weekly)/i);
+  const timeframe = timeframeMatch ? timeframeMatch[1].toUpperCase() : undefined;
+  
+  return {
+    strategy: strategyId,
+    confidence,
+    signal,
+    entryPrice,
+    stopLoss,
+    takeProfit,
+    reasoning: `${strategyName} Analysis: ${analysisText.slice(0, 200)}...`,
+    keyLevels,
+    timeframe
+  };
+};
+
 export const ImageChartAnalysis = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>(['ict']);
@@ -43,13 +127,19 @@ export const ImageChartAnalysis = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
+      // Accept any file that might be an image or screenshot
+      const validTypes = ['image/', 'application/octet-stream'];
+      const isValidType = validTypes.some(type => file.type.startsWith(type)) || 
+                         file.type === '' || // Some screenshots don't have mime type
+                         /\.(png|jpe?g|gif|bmp|webp|tiff?|svg)$/i.test(file.name);
+      
+      if (isValidType) {
         setSelectedFile(file);
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
         setAnalysisResults([]);
       } else {
-        toast.error('Please select an image file');
+        toast.error('Please select an image file or screenshot');
       }
     }
   };
@@ -97,18 +187,16 @@ export const ImageChartAnalysis = () => {
         throw new Error(error.message);
       }
 
-      // Parse Gemini response and create results
-      const mockResults = selectedStrategies.map(strategyId => ({
-        strategy: strategyId,
-        confidence: Math.floor(Math.random() * 30) + 70,
-        signal: ['buy', 'sell', 'neutral'][Math.floor(Math.random() * 3)] as 'buy' | 'sell' | 'neutral',
-        reasoning: data.analysis || 'Analysis completed with Gemini AI',
-        entryPrice: Math.random() * 100 + 50,
-        stopLoss: Math.random() * 50 + 25,
-        takeProfit: Math.random() * 150 + 75
-      }));
+      // Parse Gemini response and create structured results
+      const analysisText = data.analysis || 'No analysis provided';
       
-      setAnalysisResults(mockResults);
+      // Create analysis results based on selected strategies
+      const results = selectedStrategies.map(strategyId => {
+        const strategy = strategies.find(s => s.id === strategyId);
+        return parseGeminiAnalysisForStrategy(analysisText, strategyId, strategy?.name || '');
+      });
+      
+      setAnalysisResults(results);
       toast.success('Chart analysis completed with Gemini AI!');
     } catch (error) {
       console.error('Error analyzing chart:', error);
@@ -181,7 +269,7 @@ export const ImageChartAnalysis = () => {
             <Input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="*"
               onChange={handleFileSelect}
               className="hidden"
             />
