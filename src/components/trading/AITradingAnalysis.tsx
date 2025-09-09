@@ -167,42 +167,50 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
       )}
 
       {analysis && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Trading Signal */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
-              <CardTitle className="flex items-center space-x-2">
-                <Target className="w-5 h-5 text-primary" />
-                <span>Trading Signal</span>
-                <Badge className={getSignalColor(analysis.signal.action)}>
-                  {analysis.signal.action}
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Target className="w-5 h-5 text-primary" />
+                  <span>Trading Signal</span>
+                  <Badge className={getSignalColor(analysis.signal.action)}>
+                    {analysis.signal.action}
+                  </Badge>
+                </div>
+                <Badge variant="outline" className="text-sm">
+                  {analysis.signal.confidence}% Confidence
                 </Badge>
               </CardTitle>
               <CardDescription>
-                AI-generated trading recommendation with {analysis.signal.confidence}% confidence
+                AI-generated trading recommendation with detailed price targets
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Entry Price</p>
-                  <p className="text-lg font-bold text-foreground">${analysis.signal.entryPrice.toFixed(2)}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="text-center p-4 rounded-lg bg-muted/20 border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Entry Price</p>
+                  <p className="text-xl font-bold text-foreground mt-1">${analysis.signal.entryPrice.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Target</p>
-                  <p className="text-lg font-bold text-green-600">${analysis.signal.targetPrice.toFixed(2)}</p>
+                <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Target</p>
+                  <p className="text-xl font-bold text-green-600 mt-1">${analysis.signal.targetPrice.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Stop Loss</p>
-                  <p className="text-lg font-bold text-red-600">${analysis.signal.stopLoss.toFixed(2)}</p>
+                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Stop Loss</p>
+                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.signal.stopLoss.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">R:R Ratio</p>
-                  <p className="text-lg font-bold text-primary">{analysis.signal.riskReward}:1</p>
+                <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">R:R Ratio</p>
+                  <p className="text-xl font-bold text-blue-600 mt-1">{analysis.signal.riskReward}:1</p>
                 </div>
               </div>
-              <div className="mt-4 p-3 bg-primary/5 rounded-lg border">
-                <p className="text-sm"><strong>Timeframe:</strong> {analysis.signal.timeframe}</p>
+              <div className="p-4 bg-primary/5 rounded-lg border">
+                <p className="text-sm font-medium">
+                  <span className="text-muted-foreground">Timeframe:</span> 
+                  <span className="ml-2 text-foreground">{analysis.signal.timeframe}</span>
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -210,34 +218,36 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
           {/* Risk Management */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
-              <CardTitle className="flex items-center space-x-2">
-                <Shield className="w-5 h-5 text-red-600" />
-                <span>Risk Management</span>
-                <Badge className={`${getRiskColor(analysis.risk.riskLevel)} bg-white/50`}>
-                  {analysis.risk.riskLevel} RISK
-                </Badge>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Shield className="w-5 h-5 text-red-600" />
+                  <span>Risk Management</span>
+                  <Badge className={`${getRiskColor(analysis.risk.riskLevel)} bg-white/50 dark:bg-black/50`}>
+                    {analysis.risk.riskLevel} RISK
+                  </Badge>
+                </div>
               </CardTitle>
               <CardDescription>
                 Position sizing and risk parameters for safe trading
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Position Size</p>
-                  <p className="text-lg font-bold text-foreground">{analysis.risk.positionSize}%</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="text-center p-4 rounded-lg bg-muted/20 border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Position Size</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{analysis.risk.positionSize}%</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Max Loss</p>
-                  <p className="text-lg font-bold text-red-600">${analysis.risk.maxLoss}</p>
+                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Max Loss</p>
+                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.risk.maxLoss}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Risk %</p>
-                  <p className="text-lg font-bold text-orange-600">{analysis.risk.riskPercentage}%</p>
+                <div className="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Risk %</p>
+                  <p className="text-xl font-bold text-orange-600 mt-1">{analysis.risk.riskPercentage}%</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Volatility</p>
-                  <p className="text-lg font-bold text-purple-600">{analysis.risk.volatility}%</p>
+                <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Volatility</p>
+                  <p className="text-xl font-bold text-purple-600 mt-1">{analysis.risk.volatility}%</p>
                 </div>
               </div>
             </CardContent>
@@ -246,44 +256,47 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
           {/* Technical Analysis */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
-                <span>Technical Analysis</span>
-                <Badge variant="outline" className="bg-white/50">
-                  {analysis.technical.trend}
-                </Badge>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
+                  <span>Technical Analysis</span>
+                  <Badge variant="outline" className="bg-white/50 dark:bg-black/50">
+                    {analysis.technical.trend}
+                  </Badge>
+                </div>
               </CardTitle>
               <CardDescription>
                 Key technical indicators and support/resistance levels
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Support</p>
-                  <p className="text-lg font-bold text-green-600">${analysis.technical.support.toFixed(2)}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Support</p>
+                  <p className="text-xl font-bold text-green-600 mt-1">${analysis.technical.support.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Resistance</p>
-                  <p className="text-lg font-bold text-red-600">${analysis.technical.resistance.toFixed(2)}</p>
+                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Resistance</p>
+                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.technical.resistance.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">RSI</p>
-                  <p className="text-lg font-bold text-purple-600">{analysis.technical.rsi}</p>
+                <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">RSI</p>
+                  <p className="text-xl font-bold text-purple-600 mt-1">{analysis.technical.rsi}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-2 rounded bg-muted/10">
-                  <p className="text-xs text-muted-foreground">SMA 20</p>
-                  <p className="font-semibold text-orange-600">${analysis.technical.movingAverages.sma20.toFixed(2)}</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+                  <p className="text-xs font-medium text-muted-foreground">SMA 20</p>
+                  <p className="text-lg font-bold text-orange-600">${analysis.technical.movingAverages.sma20.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-2 rounded bg-muted/10">
-                  <p className="text-xs text-muted-foreground">SMA 50</p>
-                  <p className="font-semibold text-blue-600">${analysis.technical.movingAverages.sma50.toFixed(2)}</p>
+                <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs font-medium text-muted-foreground">SMA 50</p>
+                  <p className="text-lg font-bold text-blue-600">${analysis.technical.movingAverages.sma50.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-2 rounded bg-muted/10">
-                  <p className="text-xs text-muted-foreground">MACD</p>
-                  <p className="font-semibold text-green-600">{analysis.technical.macd}</p>
+                <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <p className="text-xs font-medium text-muted-foreground">MACD</p>
+                  <p className="text-sm font-bold text-green-600">{analysis.technical.macd}</p>
                 </div>
               </div>
             </CardContent>
@@ -292,7 +305,7 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
           {/* AI Explanation */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-3">
                 <Brain className="w-5 h-5 text-purple-600" />
                 <span>AI Analysis Explanation</span>
               </CardTitle>
@@ -301,33 +314,33 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <Alert>
+              <Alert className="mb-6">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="text-sm leading-relaxed">
                   {analysis.explanation}
                 </AlertDescription>
               </Alert>
               
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-2 p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold">High Probability Setup</p>
-                    <p className="text-xs text-muted-foreground">Technical confluence</p>
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-200">High Probability Setup</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Technical confluence</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center space-x-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <DollarSign className="w-6 h-6 text-blue-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold">Favorable R:R</p>
-                    <p className="text-xs text-muted-foreground">{analysis.signal.riskReward}:1 ratio</p>
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Favorable R:R</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">{analysis.signal.riskReward}:1 ratio</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
-                  <Shield className="w-5 h-5 text-orange-600" />
+                <div className="flex items-center space-x-3 p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+                  <Shield className="w-6 h-6 text-orange-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold">Risk Controlled</p>
-                    <p className="text-xs text-muted-foreground">{analysis.risk.riskPercentage}% portfolio risk</p>
+                    <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">Risk Controlled</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400">{analysis.risk.riskPercentage}% portfolio risk</p>
                   </div>
                 </div>
               </div>
@@ -335,7 +348,7 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
           </Card>
 
           {/* Disclaimer */}
-          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 border-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800 dark:text-amber-200">
               <strong>Disclaimer:</strong> This analysis is for educational purposes only and should not be considered as financial advice. 
