@@ -139,6 +139,8 @@ serve(async (req) => {
     const response = await fetch(url);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`FMP API error: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`FMP API error: ${response.status} ${response.statusText}`);
     }
     

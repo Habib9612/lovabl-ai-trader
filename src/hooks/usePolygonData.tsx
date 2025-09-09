@@ -57,7 +57,8 @@ export const usePolygonData = () => {
       });
 
       if (functionError) {
-        throw new Error(functionError.message);
+        console.error('Polygon API error:', functionError);
+        throw new Error(functionError.message || 'Polygon API call failed');
       }
 
       return data;

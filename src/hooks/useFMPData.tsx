@@ -204,7 +204,10 @@ export const useFMPData = () => {
         body: { endpoint, symbol, ...options }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('FMP API error:', error);
+        throw new Error(error.message || 'FMP API call failed');
+      }
       return data;
     } catch (err: any) {
       setError(err.message);
