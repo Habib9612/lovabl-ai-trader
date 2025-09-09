@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ComposedChart } from 'recharts';
-import { TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { TrendingUp, TrendingDown, BarChart3, Activity, Search, Zap, Target } from 'lucide-react';
 import { useFinvizData } from '@/hooks/useFinvizData';
 import { AITradingAnalysis } from './AITradingAnalysis';
 
@@ -92,351 +92,318 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 animate-fade-in">
+      {/* Beautiful Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-bold">FinViz Live Chart</h2>
-          <p className="text-muted-foreground">Real-time stock price visualization</p>
+          <h2 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+            Live Market Charts
+          </h2>
+          <p className="text-lg text-gray-600">Real-time stock price visualization with professional tools</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Input
-            placeholder="Enter symbol"
-            value={inputSymbol}
-            onChange={(e) => setInputSymbol(e.target.value.toUpperCase())}
-            onKeyPress={(e) => e.key === 'Enter' && handleSymbolChange()}
-            className="w-32"
-          />
-          <Button onClick={handleSymbolChange} size="sm">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Enter symbol (e.g., AAPL)"
+              value={inputSymbol}
+              onChange={(e) => setInputSymbol(e.target.value.toUpperCase())}
+              onKeyPress={(e) => e.key === 'Enter' && handleSymbolChange()}
+              className="pl-10 w-48 rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <Button 
+            onClick={handleSymbolChange} 
+            className="bg-gradient-primary hover:shadow-lg transition-all px-6 rounded-xl"
+          >
             <BarChart3 className="w-4 h-4 mr-2" />
-            Load
+            Load Chart
           </Button>
         </div>
       </div>
 
-      {/* Stock Info Card - FinViz Style */}
-      <Card className="bg-background border-2 shadow-lg">
-        <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-primary/10">
+      {/* Stock Information Dashboard */}
+      <Card className="border-0 shadow-xl bg-gradient-card overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white pb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CardTitle className="text-2xl font-bold text-primary">{currentSymbol}</CardTitle>
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                FinViz Live
-              </Badge>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl font-bold">{currentSymbol}</CardTitle>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge className="bg-white/20 text-white border-white/30">Live Data</Badge>
+                  <Badge className="bg-green-500/20 text-green-100 border-green-400/30">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+                    Active
+                  </Badge>
+                </div>
+              </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Real-time Data</p>
-              <p className="text-xs text-muted-foreground">{new Date().toLocaleTimeString()}</p>
+              <p className="text-sm opacity-80">Market Status</p>
+              <p className="text-lg font-semibold">Open - {new Date().toLocaleTimeString()}</p>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="p-8">
           {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="space-y-1">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-6 w-20" />
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-24" />
                 </div>
               ))}
             </div>
           ) : stockData ? (
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Last Price</p>
-                <p className="text-xl font-bold text-foreground mt-1">${stockData.price || currentPrice.toFixed(2)}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Change</p>
-                <div className={`text-xl font-bold mt-1 flex items-center justify-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPositive ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-                  {change}
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+              {[
+                { label: 'Current Price', value: `$${stockData.price || currentPrice.toFixed(2)}`, color: 'bg-blue-50 border-blue-200 text-blue-900' },
+                { 
+                  label: 'Daily Change', 
+                  value: change, 
+                  color: isPositive ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900',
+                  icon: isPositive ? TrendingUp : TrendingDown
+                },
+                { label: 'Volume', value: stockData.volume || formatVolume(chartData[chartData.length-1]?.volume || 0), color: 'bg-purple-50 border-purple-200 text-purple-900' },
+                { label: 'Market Cap', value: stockData.marketCap || '3.58T', color: 'bg-indigo-50 border-indigo-200 text-indigo-900' },
+                { label: 'P/E Ratio', value: stockData.pe || '35.96', color: 'bg-orange-50 border-orange-200 text-orange-900' },
+                { label: 'Beta', value: stockData.beta || '1.31', color: 'bg-gray-50 border-gray-200 text-gray-900' }
+              ].map((item, i) => (
+                <div key={i} className={`text-center p-6 rounded-xl border-2 ${item.color} hover:shadow-lg transition-all hover-scale`}>
+                  <p className="text-sm font-bold mb-3 opacity-70 uppercase tracking-wide">{item.label}</p>
+                  <div className="flex items-center justify-center gap-2">
+                    {item.icon && <item.icon className="w-5 h-5" />}
+                    <p className="text-2xl font-bold">{item.value}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Volume</p>
-                <p className="text-lg font-bold text-foreground mt-1">{stockData.volume || formatVolume(chartData[chartData.length-1]?.volume || 0)}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Market Cap</p>
-                <p className="text-lg font-bold text-foreground mt-1">{stockData.marketCap || '3.58T'}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">P/E Ratio</p>
-                <p className="text-lg font-bold text-foreground mt-1">{stockData.pe || '35.96'}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border bg-muted/20">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Beta</p>
-                <p className="text-lg font-bold text-foreground mt-1">{stockData.beta || '1.31'}</p>
-              </div>
+              ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>Enter a symbol to view FinViz data</p>
+            <div className="text-center py-12 text-gray-500">
+              <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">Enter a symbol to view market data</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* FinViz Style Candlestick Chart */}
-      <div className="space-y-4">
-        {/* Main Chart */}
-        <Card className="bg-background border-2">
-          <CardHeader className="pb-2 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <CardTitle className="text-xl font-bold">{currentSymbol}</CardTitle>
-                <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
-                  Daily
-                </Badge>
-                <Badge variant="secondary" className="bg-green-600/20 text-green-300 border-green-500/30">
+      {/* Advanced Chart Section */}
+      <Card className="border-0 shadow-xl bg-white overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <CardTitle className="text-2xl font-bold">{currentSymbol} - Daily Chart</CardTitle>
+              <div className="flex gap-2">
+                <Badge className="bg-white/10 text-white border-white/20">1D</Badge>
+                <Badge className="bg-green-500/20 text-green-300 border-green-400/30">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
                   Live
                 </Badge>
               </div>
-              <div className="text-right">
-                <p className="text-sm opacity-80">Sep 09, 10:07 AM ET</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm opacity-80">Last Updated</p>
+              <p className="text-lg font-semibold">{new Date().toLocaleString()}</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="h-[600px] bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-lg font-semibold text-gray-600">Loading Chart Data...</p>
+                <p className="text-gray-500">Fetching real-time market information</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-0 bg-slate-900">
-            {isLoading ? (
-              <Skeleton className="h-[500px] w-full bg-slate-800" />
-            ) : chartData.length > 0 ? (
-              <div className="h-[500px] w-full">
-                {/* Price Chart */}
-                <div className="h-[350px] border-b border-slate-700">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="priceAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
-                          <stop offset="50%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.1}/>
-                          <stop offset="100%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid 
-                        strokeDasharray="1 1" 
-                        stroke="#374151"
-                        strokeOpacity={0.3}
-                        vertical={false}
-                      />
-                      <XAxis 
-                        dataKey="dateFormatted"
-                        tick={{ fontSize: 11, fill: '#9ca3af' }}
-                        axisLine={{ stroke: '#374151' }}
-                        tickLine={{ stroke: '#374151' }}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis 
-                        domain={['dataMin - 5', 'dataMax + 5']}
-                        tick={{ fontSize: 11, fill: '#9ca3af' }}
-                        axisLine={{ stroke: '#374151' }}
-                        tickLine={{ stroke: '#374151' }}
-                        tickFormatter={(value) => `$${value.toFixed(0)}`}
-                        orientation="right"
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: '#1f2937',
-                          border: '1px solid #374151',
-                          borderRadius: '6px',
-                          color: '#f3f4f6'
-                        }}
-                        formatter={(value: any, name: string) => {
-                          if (name === 'close') return [`$${value.toFixed(2)}`, 'Close'];
-                          return [value, name];
-                        }}
-                      />
-                      
-                      {/* Moving Averages */}
-                      {chartData[0]?.sma20 && (
-                        <Line
-                          type="monotone"
-                          dataKey="sma20"
-                          stroke="#f59e0b"
-                          strokeWidth={1}
-                          dot={false}
-                          connectNulls={false}
-                          name="SMA 20"
-                        />
-                      )}
-                      {chartData[0]?.sma50 && (
-                        <Line
-                          type="monotone"
-                          dataKey="sma50"
-                          stroke="#8b5cf6"
-                          strokeWidth={1}
-                          dot={false}
-                          connectNulls={false}
-                          name="SMA 50"
-                        />
-                      )}
-                      
-                      {/* Price Area */}
-                      <Area
+          ) : chartData.length > 0 ? (
+            <div className="h-[600px] w-full bg-gray-900">
+              {/* Price Chart */}
+              <div className="h-[450px] border-b border-gray-700">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 20, right: 40, left: 20, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="priceAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.4}/>
+                        <stop offset="50%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.2}/>
+                        <stop offset="100%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                      strokeDasharray="2 2" 
+                      stroke="#374151"
+                      strokeOpacity={0.3}
+                      vertical={false}
+                    />
+                    <XAxis 
+                      dataKey="dateFormatted"
+                      tick={{ fontSize: 12, fill: '#9ca3af' }}
+                      axisLine={{ stroke: '#374151' }}
+                      tickLine={{ stroke: '#374151' }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      domain={['dataMin - 5', 'dataMax + 5']}
+                      tick={{ fontSize: 12, fill: '#9ca3af' }}
+                      axisLine={{ stroke: '#374151' }}
+                      tickLine={{ stroke: '#374151' }}
+                      tickFormatter={(value) => `$${value.toFixed(0)}`}
+                      orientation="right"
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '12px',
+                        color: '#f3f4f6',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+                      }}
+                      formatter={(value: any, name: string) => {
+                        if (name === 'close') return [`$${value.toFixed(2)}`, 'Close Price'];
+                        return [value, name];
+                      }}
+                    />
+                    
+                    {/* Moving Averages */}
+                    {chartData[0]?.sma20 && (
+                      <Line
                         type="monotone"
-                        dataKey="close"
-                        fill="url(#priceAreaGradient)"
-                        stroke={isPositive ? "#22c55e" : "#ef4444"}
+                        dataKey="sma20"
+                        stroke="#f59e0b"
                         strokeWidth={2}
-                        fillOpacity={1}
+                        dot={false}
+                        connectNulls={false}
+                        name="SMA 20"
                       />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                {/* Volume Chart */}
-                <div className="h-[140px] bg-slate-900">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-                      <defs>
-                        <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6366f1" stopOpacity={0.6}/>
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.1}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="1 1" stroke="#374151" strokeOpacity={0.3} vertical={false} />
-                      <XAxis 
-                        dataKey="dateFormatted"
-                        tick={{ fontSize: 10, fill: '#9ca3af' }}
-                        axisLine={{ stroke: '#374151' }}
-                        tickLine={{ stroke: '#374151' }}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 10, fill: '#9ca3af' }}
-                        axisLine={{ stroke: '#374151' }}
-                        tickLine={{ stroke: '#374151' }}
-                        tickFormatter={formatVolume}
-                        orientation="right"
-                      />
-                      <Area
+                    )}
+                    {chartData[0]?.sma50 && (
+                      <Line
                         type="monotone"
-                        dataKey="volume"
-                        stroke="#6366f1"
-                        fill="url(#volumeGrad)"
-                        strokeWidth={1}
+                        dataKey="sma50"
+                        stroke="#8b5cf6"
+                        strokeWidth={2}
+                        dot={false}
+                        connectNulls={false}
+                        name="SMA 50"
                       />
-                    </AreaChart>
-                  </ResponsiveContainer>
-      </div>
-
-      {/* AI Trading Analysis Section */}
-      <AITradingAnalysis symbol={currentSymbol} currentPrice={currentPrice} />
-    </div>
-            ) : (
-              <div className="h-[500px] flex flex-col items-center justify-center text-slate-400 bg-slate-900">
-                <BarChart3 className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-lg font-medium">Chart Loading...</p>
-                <p className="text-sm">Fetching market data</p>
+                    )}
+                    
+                    {/* Price Area */}
+                    <Area
+                      type="monotone"
+                      dataKey="close"
+                      fill="url(#priceAreaGradient)"
+                      stroke={isPositive ? "#22c55e" : "#ef4444"}
+                      strokeWidth={3}
+                      fillOpacity={1}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              
+              {/* Volume Chart */}
+              <div className="h-[150px] bg-gray-900">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 40, left: 20, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#6366f1" stopOpacity={0.6}/>
+                        <stop offset="100%" stopColor="#6366f1" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="2 2" stroke="#374151" strokeOpacity={0.3} vertical={false} />
+                    <XAxis 
+                      dataKey="dateFormatted"
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                      axisLine={{ stroke: '#374151' }}
+                      tickLine={{ stroke: '#374151' }}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                      axisLine={{ stroke: '#374151' }}
+                      tickLine={{ stroke: '#374151' }}
+                      tickFormatter={formatVolume}
+                      orientation="right"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="volume"
+                      stroke="#6366f1"
+                      fill="url(#volumeGrad)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <div className="h-[600px] flex flex-col items-center justify-center text-gray-500 bg-gray-50">
+              <BarChart3 className="w-20 h-20 mb-6 opacity-50" />
+              <p className="text-xl font-semibold mb-2">Chart Loading...</p>
+              <p className="text-gray-400">Fetching market data for {currentSymbol}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Technical Analysis Sidebar */}
-        <Card className="bg-background border-2">
-          <CardHeader className="pb-3 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
-            <CardTitle className="text-sm font-bold">Technical Analysis</CardTitle>
+      {/* Technical Analysis Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Card className="lg:col-span-1 border-0 shadow-xl bg-gradient-card">
+          <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Technical Analysis
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
+          <CardContent className="p-6 space-y-6">
             {/* Key Levels */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Key Levels</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">52W High</span>
-                  <span className="font-semibold text-green-600">$237.23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">52W Low</span>
-                  <span className="font-semibold text-red-600">$164.08</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Support</span>
-                  <span className="font-semibold">$230.00</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Resistance</span>
-                  <span className="font-semibold">$240.00</span>
-                </div>
+              <p className="text-sm font-bold text-gray-600 mb-4 uppercase tracking-wide">Key Levels</p>
+              <div className="space-y-3">
+                {[
+                  { label: '52W High', value: '$237.23', color: 'text-green-600' },
+                  { label: '52W Low', value: '$164.08', color: 'text-red-600' },
+                  { label: 'Support', value: '$230.00', color: 'text-blue-600' },
+                  { label: 'Resistance', value: '$240.00', color: 'text-orange-600' }
+                ].map((item, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-700 font-medium">{item.label}</span>
+                    <span className={`font-bold ${item.color}`}>{item.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Technical Indicators */}
-            <div className="border-t pt-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Indicators</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">RSI (14)</span>
-                  <span className="font-semibold text-orange-500">58.4</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">MACD</span>
-                  <span className="font-semibold text-green-600">+2.18</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">SMA 20</span>
-                  <span className="font-semibold text-blue-500">${(currentPrice * 0.98).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">SMA 50</span>
-                  <span className="font-semibold text-purple-500">${(currentPrice * 0.96).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Data */}
-            <div className="border-t pt-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Statistics</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">EPS (ttm)</span>
-                  <span className="font-semibold">{stockData?.eps || '6.58'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Dividend</span>
-                  <span className="font-semibold">{stockData?.dividend || '0.25%'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Avg Volume</span>
-                  <span className="font-semibold">58.8M</span>
-                </div>
+            <div className="border-t pt-6">
+              <p className="text-sm font-bold text-gray-600 mb-4 uppercase tracking-wide">Indicators</p>
+              <div className="space-y-3">
+                {[
+                  { label: 'RSI (14)', value: '58.4', color: 'text-orange-500' },
+                  { label: 'MACD', value: '+2.18', color: 'text-green-600' },
+                  { label: 'SMA 20', value: '$232.10', color: 'text-blue-600' },
+                  { label: 'SMA 50', value: '$228.45', color: 'text-purple-600' }
+                ].map((item, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-700 font-medium">{item.label}</span>
+                    <span className={`font-bold ${item.color}`}>{item.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* AI Trading Analysis */}
+        <div className="lg:col-span-2">
+          <AITradingAnalysis symbol={currentSymbol} currentPrice={currentPrice} />
+        </div>
       </div>
-
-      {/* Additional Stock Data */}
-      {stockData && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Additional Data</CardTitle>
-            <CardDescription>Extended FinViz stock information</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">P/E Ratio</p>
-                <p className="text-lg font-medium">{stockData.pe || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">52W Range</p>
-                <p className="text-lg font-medium">{stockData.range52w || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Beta</p>
-                <p className="text-lg font-medium">{stockData.beta || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Dividend</p>
-                <p className="text-lg font-medium">{stockData.dividend || 'N/A'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

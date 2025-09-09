@@ -4,17 +4,19 @@ import DashboardHeader from './DashboardHeader';
 
 const DashboardLayout = () => {
   return (
-    <div className="h-screen flex bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Sidebar */}
       <DashboardSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="lg:pl-64">
         <DashboardHeader />
         
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+        <main className="p-8">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
