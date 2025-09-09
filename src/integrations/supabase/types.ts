@@ -1026,7 +1026,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_subscription_tier: {
+        Args: { user_id_param: string }
+        Returns: {
+          ai_analysis_enabled: boolean
+          max_portfolios: number
+          max_signals_per_day: number
+          tier_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
