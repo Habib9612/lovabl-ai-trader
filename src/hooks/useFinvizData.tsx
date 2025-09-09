@@ -35,12 +35,14 @@ export const useFinvizData = () => {
   const { toast } = useToast();
 
   const fetchStockData = async (ticker: string) => {
+    console.log('FinViz Hook: Fetching stock data for', ticker);
     setIsLoading(true);
     try {
       const { data: result, error } = await supabase.functions.invoke('finviz-data', {
         body: { action: 'get_stock', ticker }
       });
 
+      console.log('FinViz Hook: Response received', { result, error });
       if (error) throw error;
 
       if (result.success) {
@@ -118,12 +120,14 @@ export const useFinvizData = () => {
   };
 
   const getTopGainers = async (limit: number = 20) => {
+    console.log('FinViz Hook: Fetching top gainers with limit', limit);
     setIsLoading(true);
     try {
       const { data: result, error } = await supabase.functions.invoke('finviz-data', {
         body: { action: 'get_top_gainers', limit }
       });
 
+      console.log('FinViz Hook: Top gainers response', { result, error });
       if (error) throw error;
 
       if (result.success) {

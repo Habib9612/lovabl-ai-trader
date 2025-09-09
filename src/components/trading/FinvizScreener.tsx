@@ -28,6 +28,7 @@ export const FinvizScreener = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    console.log('FinvizScreener: Loading initial preset');
     loadPreset('top_gainers');
   }, []);
 
@@ -82,12 +83,17 @@ export const FinvizScreener = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">FinViz Stock Screener</h2>
-          <p className="text-muted-foreground">Real-time stock screening and market data</p>
+          <h2 className="text-2xl font-bold text-primary">FinViz Stock Screener</h2>
+          <p className="text-muted-foreground">Professional stock screening with real-time market data</p>
         </div>
-        <Badge variant="outline" className="bg-gradient-to-r from-blue-500/10 to-purple-500/10">
-          Live Data
-        </Badge>
+        <div className="flex items-center space-x-2">
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+            Live Data
+          </Badge>
+          <Badge variant="secondary" className="bg-primary/10 text-primary">
+            FinViz
+          </Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="presets" className="w-full">
@@ -150,14 +156,19 @@ export const FinvizScreener = () => {
           </Badge>
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="bg-background border-2">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
             <CardTitle className="flex items-center justify-between">
-              <span>Screening Results</span>
-              {isLoading && <Skeleton className="h-4 w-20" />}
+              <div className="flex items-center space-x-2">
+                <span className="text-lg">Screening Results</span>
+                {isLoading && <Skeleton className="h-4 w-20" />}
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {filteredData.length} results
+              </Badge>
             </CardTitle>
-            <CardDescription>
-              {SCREENER_PRESETS[activePreset as keyof typeof SCREENER_PRESETS]?.name || 'Custom Screen'}
+            <CardDescription className="text-sm">
+              {SCREENER_PRESETS[activePreset as keyof typeof SCREENER_PRESETS]?.name || 'Custom Screen'} • Updated {new Date().toLocaleTimeString()}
             </CardDescription>
           </CardHeader>
           <CardContent>

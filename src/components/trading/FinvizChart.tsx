@@ -47,6 +47,7 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
   };
 
   useEffect(() => {
+    console.log('FinvizChart: Fetching data for', currentSymbol);
     fetchStockData(currentSymbol);
   }, [currentSymbol]);
 
@@ -91,177 +92,224 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
         </div>
       </div>
 
-      {/* Stock Info Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-        <CardHeader className="pb-3">
+      {/* Stock Info Card - FinViz Style */}
+      <Card className="bg-background border-2 shadow-lg">
+        <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-primary/10">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">{currentSymbol}</CardTitle>
-            <Badge variant="outline" className="bg-white/50 dark:bg-black/50">
-              FinViz Data
-            </Badge>
+            <div className="flex items-center space-x-2">
+              <CardTitle className="text-2xl font-bold text-primary">{currentSymbol}</CardTitle>
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                FinViz Live
+              </Badge>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Real-time Data</p>
+              <p className="text-xs text-muted-foreground">{new Date().toLocaleTimeString()}</p>
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-6 w-24" />
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              ))}
             </div>
           ) : stockData ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Price</p>
-                <p className="text-2xl font-bold">{stockData.price || 'N/A'}</p>
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">Price</p>
+                <p className="text-lg font-bold text-foreground">${stockData.price || 'N/A'}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Change</p>
-                <p className={`text-xl font-semibold flex items-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPositive ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">Change</p>
+                <p className={`text-lg font-bold flex items-center justify-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                  {isPositive ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                   {change}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Volume</p>
-                <p className="text-lg font-medium">{stockData.volume || 'N/A'}</p>
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">Volume</p>
+                <p className="text-lg font-bold text-foreground">{stockData.volume || 'N/A'}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Market Cap</p>
-                <p className="text-lg font-medium">{stockData.marketCap || 'N/A'}</p>
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">Market Cap</p>
+                <p className="text-lg font-bold text-foreground">{stockData.marketCap || 'N/A'}</p>
+              </div>
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">P/E</p>
+                <p className="text-lg font-bold text-foreground">{stockData.pe || 'N/A'}</p>
+              </div>
+              <div className="text-center p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground uppercase">Beta</p>
+                <p className="text-lg font-bold text-foreground">{stockData.beta || 'N/A'}</p>
               </div>
             </div>
           ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              Enter a symbol to view data
+            <div className="text-center py-8 text-muted-foreground">
+              <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>Enter a symbol to view FinViz data</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Chart Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Price Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="w-5 h-5 mr-2" />
-              Price Chart (30 Days)
-            </CardTitle>
-            <CardDescription>FinViz style price visualization</CardDescription>
+      {/* FinViz Style Chart Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Price Chart - FinViz Style */}
+        <Card className="lg:col-span-3 bg-background border-2">
+          <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-secondary/5">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center text-lg">
+                <Activity className="w-5 h-5 mr-2 text-primary" />
+                {currentSymbol} - Interactive Chart
+              </CardTitle>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="text-xs">30D</Badge>
+                <Badge variant="outline" className="text-xs">Daily</Badge>
+                <Badge variant="outline" className="text-xs bg-green-100 text-green-800">Live</Badge>
+              </div>
+            </div>
+            <CardDescription className="text-xs">
+              FinViz style price visualization with volume • Data updates every 15 minutes
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2">
             {isLoading ? (
-              <Skeleton className="h-[300px] w-full" />
+              <Skeleton className="h-[400px] w-full" />
             ) : chartData.length > 0 ? (
-              <div className="h-[300px] w-full">
+              <div className="h-[400px] w-full bg-gradient-to-b from-background to-muted/20 rounded">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <defs>
-                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity={0}/>
+                      <linearGradient id="finvizGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={isPositive ? "#16a34a" : "#dc2626"} stopOpacity={0.4}/>
+                        <stop offset="50%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.2}/>
+                        <stop offset="100%" stopColor={isPositive ? "#16a34a" : "#dc2626"} stopOpacity={0.05}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <CartesianGrid 
+                      strokeDasharray="1 1" 
+                      stroke="hsl(var(--border))"
+                      strokeOpacity={0.3}
+                      vertical={false}
+                    />
                     <XAxis 
                       dataKey="date" 
-                      tick={{ fontSize: 12 }}
-                      stroke="hsl(var(--muted-foreground))"
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                      axisLine={false}
+                      tickLine={false}
                       tickFormatter={(value) => {
                         const date = new Date(value);
                         return `${date.getMonth() + 1}/${date.getDate()}`;
                       }}
                     />
                     <YAxis 
-                      tick={{ fontSize: 12 }}
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={formatPrice}
-                      domain={['dataMin - 5', 'dataMax + 5']}
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => `$${value.toFixed(0)}`}
+                      domain={['dataMin - 2', 'dataMax + 2']}
+                      orientation="right"
                     />
                     <Tooltip 
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
+                        backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        padding: '8px'
                       }}
-                      formatter={(value: number) => [formatPrice(value), 'Price']}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                      labelFormatter={(value) => `Date: ${value}`}
                     />
                     <Area
                       type="monotone"
                       dataKey="price"
-                      stroke={isPositive ? "#10b981" : "#ef4444"}
+                      stroke={isPositive ? "#16a34a" : "#dc2626"}
                       fillOpacity={1}
-                      fill="url(#priceGradient)"
+                      fill="url(#finvizGradient)"
                       strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: isPositive ? "#16a34a" : "#dc2626" }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No chart data available
+              <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground bg-muted/10 rounded">
+                <BarChart3 className="w-16 h-16 mb-4 opacity-50" />
+                <p className="text-lg font-medium">No Chart Data Available</p>
+                <p className="text-sm">Enter a valid stock symbol to view price chart</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Volume Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Volume</CardTitle>
-            <CardDescription>Trading volume over time</CardDescription>
+        {/* Volume & Stats Sidebar - FinViz Style */}
+        <Card className="bg-background border-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Volume & Statistics</CardTitle>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : chartData.length > 0 ? (
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 10 }}
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={(value) => {
-                        const date = new Date(value);
-                        return `${date.getMonth() + 1}/${date.getDate()}`;
-                      }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 10 }}
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={formatVolume}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value: number) => [formatVolume(value), 'Volume']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="volume"
-                      stroke="#6366f1"
-                      fillOpacity={1}
-                      fill="url(#volumeGradient)"
-                      strokeWidth={1}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+          <CardContent className="space-y-4">
+            {/* Volume Chart */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Trading Volume</p>
+              {isLoading ? (
+                <Skeleton className="h-[120px] w-full" />
+              ) : chartData.length > 0 ? (
+                <div className="h-[120px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData.slice(-7)}> {/* Last 7 days */}
+                      <defs>
+                        <linearGradient id="volumeFinviz" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6}/>
+                          <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <YAxis hide />
+                      <XAxis hide />
+                      <Area
+                        type="monotone"
+                        dataKey="volume"
+                        stroke="#3b82f6"
+                        fill="url(#volumeFinviz)"
+                        strokeWidth={1}
+                        dot={false}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[120px] flex items-center justify-center text-muted-foreground text-xs">
+                  No volume data
+                </div>
+              )}
+            </div>
+
+            {/* Key Statistics */}
+            <div className="space-y-3">
+              <div className="border-t pt-3">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Key Statistics</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">52W Range</span>
+                    <span className="text-xs font-medium">{stockData?.range52w || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">EPS (ttm)</span>
+                    <span className="text-xs font-medium">{stockData?.eps || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Dividend</span>
+                    <span className="text-xs font-medium">{stockData?.dividend || 'N/A'}</span>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No volume data
-              </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>
