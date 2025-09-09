@@ -6,6 +6,11 @@ import Auth from '@/pages/Auth';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/pages/dashboard/DashboardHome';
 import TradingAnalysis from '@/pages/dashboard/TradingAnalysis';
+import Portfolio from '@/pages/dashboard/Portfolio';
+import Education from '@/pages/dashboard/Education';
+import Watchlist from '@/pages/dashboard/Watchlist';
+import AIAnalytics from '@/pages/dashboard/AIAnalytics';
+import Settings from '@/pages/dashboard/Settings';
 import NotFound from '@/pages/NotFound';
 
 // Protected Route Component
@@ -71,18 +76,18 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<DashboardHome />} />
-              <Route path="portfolio" element={<div>Portfolio Page - Coming Soon</div>} />
+              <Route path="portfolio" element={<Portfolio />} />
               <Route path="trading" element={<TradingAnalysis />} />
-              <Route path="ai-analytics" element={<div>AI Analytics Page - Coming Soon</div>} />
+              <Route path="ai-analytics" element={<AIAnalytics />} />
               <Route path="patterns" element={<div>Pattern Recognition Page - Coming Soon</div>} />
               <Route path="signals" element={<div>Signals Page - Coming Soon</div>} />
               <Route path="community" element={<div>Community Page - Coming Soon</div>} />
               <Route path="leaderboard" element={<div>Leaderboard Page - Coming Soon</div>} />
-              <Route path="education" element={<div>Education Page - Coming Soon</div>} />
+              <Route path="education" element={<Education />} />
               <Route path="risk" element={<div>Risk Management Page - Coming Soon</div>} />
-              <Route path="watchlist" element={<div>Watchlist Page - Coming Soon</div>} />
+              <Route path="watchlist" element={<Watchlist />} />
               <Route path="markets" element={<div>Global Markets Page - Coming Soon</div>} />
-              <Route path="settings" element={<div>Settings Page - Coming Soon</div>} />
+              <Route path="settings" element={<Settings />} />
             </Route>
             
             {/* 404 Page */}
