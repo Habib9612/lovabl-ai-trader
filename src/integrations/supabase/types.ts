@@ -100,6 +100,212 @@ export type Database = {
         }
         Relationships: []
       }
+      community_messages: {
+        Row: {
+          asset_id: string | null
+          content: string
+          created_at: string
+          id: string
+          likes_count: number | null
+          message_type: string | null
+          parent_message_id: string | null
+          replies_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          message_type?: string | null
+          parent_message_id?: string | null
+          replies_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          message_type?: string | null
+          parent_message_id?: string | null
+          replies_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_messages_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_messages_parent_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "community_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      edge_logs: {
+        Row: {
+          created_at: string | null
+          id: number
+          message: string | null
+          meta: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: never
+          message?: string | null
+          meta?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: never
+          message?: string | null
+          meta?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      education_courses: {
+        Row: {
+          category: string
+          content: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty_level: string
+          estimated_duration: number | null
+          id: string
+          is_published: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty_level: string
+          estimated_duration?: number | null
+          id?: string
+          is_published?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string
+          estimated_duration?: number | null
+          id?: string
+          is_published?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      global_markets: {
+        Row: {
+          change_24h: number | null
+          change_percentage_24h: number | null
+          current_price: number | null
+          id: string
+          last_updated: string | null
+          market_cap: number | null
+          market_type: string
+          metadata: Json | null
+          name: string
+          symbol: string
+          volume_24h: number | null
+        }
+        Insert: {
+          change_24h?: number | null
+          change_percentage_24h?: number | null
+          current_price?: number | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          market_type: string
+          metadata?: Json | null
+          name: string
+          symbol: string
+          volume_24h?: number | null
+        }
+        Update: {
+          change_24h?: number | null
+          change_percentage_24h?: number | null
+          current_price?: number | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          market_type?: string
+          metadata?: Json | null
+          name?: string
+          symbol?: string
+          volume_24h?: number | null
+        }
+        Relationships: []
+      }
+      pattern_recognition: {
+        Row: {
+          accuracy_score: number | null
+          asset_id: string
+          confidence_score: number
+          detected_at: string
+          id: string
+          pattern_type: string
+          prediction: string | null
+          price_data: Json
+          timeframe: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          asset_id: string
+          confidence_score: number
+          detected_at?: string
+          id?: string
+          pattern_type: string
+          prediction?: string | null
+          price_data: Json
+          timeframe: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          asset_id?: string
+          confidence_score?: number
+          detected_at?: string
+          id?: string
+          pattern_type?: string
+          prediction?: string | null
+          price_data?: Json
+          timeframe?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pattern_recognition_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolios: {
         Row: {
           created_at: string
@@ -171,6 +377,138 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      risk_management_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          portfolio_id: string
+          rule_type: string
+          rule_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          portfolio_id: string
+          rule_type: string
+          rule_value: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          portfolio_id?: string
+          rule_type?: string
+          rule_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_management_rules_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signal_followers: {
+        Row: {
+          followed_at: string
+          follower_id: string
+          id: string
+          signal_id: string
+        }
+        Insert: {
+          followed_at?: string
+          follower_id: string
+          id?: string
+          signal_id: string
+        }
+        Update: {
+          followed_at?: string
+          follower_id?: string
+          id?: string
+          signal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_followers_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signals: {
+        Row: {
+          asset_id: string
+          confidence_level: number | null
+          created_at: string
+          entry_price: number
+          expires_at: string | null
+          followers_count: number | null
+          id: string
+          reasoning: string | null
+          signal_type: string
+          status: string
+          stop_loss: number | null
+          success_rate: number | null
+          target_price: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_id: string
+          confidence_level?: number | null
+          created_at?: string
+          entry_price: number
+          expires_at?: string | null
+          followers_count?: number | null
+          id?: string
+          reasoning?: string | null
+          signal_type: string
+          status?: string
+          stop_loss?: number | null
+          success_rate?: number | null
+          target_price?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_id?: string
+          confidence_level?: number | null
+          created_at?: string
+          entry_price?: number
+          expires_at?: string | null
+          followers_count?: number | null
+          id?: string
+          reasoning?: string | null
+          signal_type?: string
+          status?: string
+          stop_loss?: number | null
+          success_rate?: number | null
+          target_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_follows: {
         Row: {
@@ -299,6 +637,44 @@ export type Database = {
             columns: ["portfolio_id"]
             isOneToOne: false
             referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_course_progress: {
+        Row: {
+          completed_at: string | null
+          completed_lessons: Json | null
+          course_id: string
+          id: string
+          progress_percentage: number | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_lessons?: Json | null
+          course_id: string
+          id?: string
+          progress_percentage?: number | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_lessons?: Json | null
+          course_id?: string
+          id?: string
+          progress_percentage?: number | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_course_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "education_courses"
             referencedColumns: ["id"]
           },
         ]
