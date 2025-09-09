@@ -67,3 +67,6 @@ verify_jwt = false
 
 [functions.fmp-data]
 verify_jwt = false
+
+[functions.finviz-data]
+verify_jwt = false
