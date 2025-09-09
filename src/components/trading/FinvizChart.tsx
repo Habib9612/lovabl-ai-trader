@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ComposedChart, Bar } from 'recharts';
 import { TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useFinvizData } from '@/hooks/useFinvizData';
+import { AITradingAnalysis } from './AITradingAnalysis';
 
 interface ChartProps {
   symbol?: string;
@@ -353,8 +354,11 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-              </div>
+      </div>
+
+      {/* AI Trading Analysis Section */}
+      <AITradingAnalysis symbol={currentSymbol} currentPrice={currentPrice} />
+    </div>
             ) : (
               <div className="h-[500px] flex flex-col items-center justify-center text-slate-400 bg-slate-900">
                 <BarChart3 className="w-16 h-16 mb-4 opacity-50" />

@@ -19,20 +19,15 @@ const TradingAnalysis = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="charts" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="charts">Live Charts</TabsTrigger>
-          <TabsTrigger value="finviz-chart">FinViz Chart</TabsTrigger>
+      <Tabs defaultValue="finviz-chart" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="finviz-chart">Live Charts</TabsTrigger>
           <TabsTrigger value="screener">Stock Screener</TabsTrigger>
           <TabsTrigger value="fundamentals">Fundamentals</TabsTrigger>
           <TabsTrigger value="image-analysis">Image Analysis</TabsTrigger>
           <TabsTrigger value="ai-training">AI Training</TabsTrigger>
           <TabsTrigger value="journal">Trading Journal</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="charts" className="space-y-6">
-          <EnhancedTradingChart />
-        </TabsContent>
 
         <TabsContent value="finviz-chart" className="space-y-6">
           <FinvizChart />
