@@ -17,7 +17,9 @@ import {
   DollarSign,
   BarChart3,
   Activity,
-  Zap
+  Zap,
+  Timer,
+  TrendingDown as TrendIcon
 } from 'lucide-react';
 
 interface TradingSignal {
@@ -73,16 +75,16 @@ const AIAnalysisDetails: React.FC = () => {
     setIsLoading(true);
     
     // Simulate AI analysis
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     const mockAnalysis = {
       signal: {
         action: currentPrice > 235 ? 'SELL' as const : 'BUY' as const,
-        confidence: 85,
+        confidence: 87,
         entryPrice: currentPrice,
         targetPrice: currentPrice > 235 ? 225 : 245,
         stopLoss: currentPrice > 235 ? 240 : 230,
-        riskReward: 2.8,
+        riskReward: 3.2,
         timeframe: '1-2 weeks'
       },
       risk: {
@@ -105,8 +107,8 @@ const AIAnalysisDetails: React.FC = () => {
         }
       },
       explanation: currentPrice > 235 
-        ? `${symbol} shows overextension after recent gains. Technical indicators suggest a pullback is likely. RSI at 58.4 indicates moderate buying pressure, but resistance at $240 is strong. Volume analysis shows distribution patterns. Risk-reward ratio of 2.8:1 makes this a favorable short setup with proper risk management.`
-        : `${symbol} is approaching key support levels with bullish divergence on MACD. The recent dip presents a buying opportunity as the stock bounces off the $230 support. Volume is increasing on the bounce, and the 20-period SMA is providing dynamic support. Technical setup favors upward movement toward $245 resistance.`
+        ? `${symbol} shows signs of overextension with strong resistance at $240. Technical indicators suggest a pullback to $225 support level. RSI at 58.4 indicates moderate buying pressure but momentum is weakening. Volume analysis confirms distribution patterns among institutional investors.`
+        : `${symbol} presents an excellent buying opportunity near key support at $230. MACD shows bullish divergence while RSI indicates oversold conditions. Volume is increasing on the bounce, suggesting strong institutional accumulation. Technical setup favors movement toward $245 resistance.`
     };
 
     setAnalysis(mockAnalysis);
@@ -115,18 +117,26 @@ const AIAnalysisDetails: React.FC = () => {
 
   const getSignalColor = (action: string) => {
     switch (action) {
-      case 'BUY': return 'bg-green-500 text-white';
-      case 'SELL': return 'bg-red-500 text-white';
-      default: return 'bg-yellow-500 text-white';
+      case 'BUY': return 'bg-green-500 hover:bg-green-600 text-white shadow-lg';
+      case 'SELL': return 'bg-red-500 hover:bg-red-600 text-white shadow-lg';
+      default: return 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg';
+    }
+  };
+
+  const getSignalIcon = (action: string) => {
+    switch (action) {
+      case 'BUY': return <TrendingUp className="w-5 h-5" />;
+      case 'SELL': return <TrendingDown className="w-5 h-5" />;
+      default: return <Activity className="w-5 h-5" />;
     }
   };
 
   const getRiskColor = (level: string) => {
     switch (level) {
-      case 'LOW': return 'text-green-600';
-      case 'MEDIUM': return 'text-yellow-600';
-      case 'HIGH': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'LOW': return 'text-green-600 bg-green-50 border-green-200';
+      case 'MEDIUM': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'HIGH': return 'text-red-600 bg-red-50 border-red-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
@@ -140,55 +150,66 @@ const AIAnalysisDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
-        <div className="container mx-auto p-6 max-w-7xl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="container mx-auto p-8 max-w-7xl">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-6 mb-12">
             <Button 
               variant="outline" 
-              size="sm" 
+              size="lg" 
               onClick={() => navigate(-1)}
-              className="shrink-0"
+              className="shadow-sm hover:shadow-md transition-all"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Trading
             </Button>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 AI Analysis for {symbol}
               </h1>
-              <p className="text-muted-foreground">Generating comprehensive trading analysis...</p>
+              <p className="text-xl text-muted-foreground mt-2">Generating comprehensive trading insights...</p>
             </div>
           </div>
           
-          {/* Loading Animation */}
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="relative">
-              <Brain className="w-16 h-16 text-blue-600 animate-pulse mb-4" />
-              <div className="absolute -inset-4 bg-blue-600/20 rounded-full animate-ping"></div>
+          {/* Beautiful Loading Animation */}
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="relative mb-8">
+              <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center animate-pulse">
+                <Brain className="w-10 h-10 text-white" />
+              </div>
+              <div className="absolute -inset-4 bg-primary/20 rounded-full animate-ping"></div>
+              <div className="absolute -inset-8 bg-primary/10 rounded-full animate-ping animation-delay-200"></div>
             </div>
-            <h2 className="text-xl font-semibold mb-2">Analyzing Market Data</h2>
-            <p className="text-muted-foreground mb-8">Please wait while our AI processes the information...</p>
+            <h2 className="text-2xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+              Analyzing Market Data
+            </h2>
+            <p className="text-lg text-muted-foreground mb-12 text-center max-w-md">
+              Our AI is processing technical indicators, market sentiment, and risk factors to generate your personalized trading recommendation.
+            </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
               {[
-                'Trading Signal',
-                'Risk Assessment', 
-                'Technical Analysis',
-                'Market Sentiment',
-                'Price Targets',
-                'Risk Management'
-              ].map((title, i) => (
-                <Card key={i} className="h-48">
-                  <CardHeader>
-                    <Skeleton className="h-4 w-32" />
+                { title: 'Market Analysis', desc: 'Processing price action & volume' },
+                { title: 'Risk Assessment', desc: 'Calculating position sizing' },
+                { title: 'Technical Signals', desc: 'Analyzing indicators & patterns' },
+                { title: 'Sentiment Analysis', desc: 'Evaluating market psychology' },
+                { title: 'Price Targets', desc: 'Identifying key levels' },
+                { title: 'Final Recommendation', desc: 'Generating trading signal' }
+              ].map((item, i) => (
+                <Card key={i} className="h-40 bg-gradient-card border-0 shadow-card hover:shadow-primary/10 transition-all">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                      </div>
+                      <Skeleton className="h-5 w-32" />
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <Skeleton className="h-4 w-full" />
                       <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-8 w-full" />
-                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-6 w-1/2" />
                     </div>
                   </CardContent>
                 </Card>
@@ -202,27 +223,30 @@ const AIAnalysisDetails: React.FC = () => {
 
   if (!analysis) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
-        <div className="container mx-auto p-6 max-w-7xl">
-          <div className="flex items-center gap-4 mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100">
+        <div className="container mx-auto p-8 max-w-7xl">
+          <div className="flex items-center gap-6 mb-12">
             <Button 
               variant="outline" 
-              size="sm" 
+              size="lg" 
               onClick={() => navigate(-1)}
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Trading
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-red-600">Analysis Error</h1>
-              <p className="text-muted-foreground">Failed to generate analysis</p>
+              <h1 className="text-4xl font-bold text-red-600">Analysis Error</h1>
+              <p className="text-xl text-muted-foreground mt-2">Failed to generate analysis</p>
             </div>
           </div>
-          <div className="text-center py-16">
-            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <p className="text-lg">Something went wrong. Please try again.</p>
-            <Button onClick={generateAnalysis} className="mt-4">
-              <Brain className="w-4 h-4 mr-2" />
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
+            <p className="text-lg text-muted-foreground mb-8">We couldn't generate the analysis. Please try again.</p>
+            <Button onClick={generateAnalysis} size="lg" className="shadow-lg">
+              <Brain className="w-5 h-5 mr-2" />
               Retry Analysis
             </Button>
           </div>
@@ -232,158 +256,155 @@ const AIAnalysisDetails: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header with Back Button */}
-        <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto p-8 max-w-7xl">
+        {/* Header */}
+        <div className="flex items-center gap-6 mb-12">
           <Button 
             variant="outline" 
-            size="sm" 
+            size="lg" 
             onClick={() => navigate(-1)}
-            className="shrink-0"
+            className="shadow-sm hover:shadow-md transition-all"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Trading
           </Button>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="flex-1">
+            <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
               AI Trading Analysis
             </h1>
-            <p className="text-xl text-muted-foreground">
-              Comprehensive analysis for <span className="font-semibold text-foreground">{symbol}</span> at 
-              <span className="font-semibold text-foreground"> ${currentPrice.toFixed(2)}</span>
-            </p>
+            <div className="flex items-center gap-4 text-xl">
+              <span className="text-muted-foreground">Analysis for</span>
+              <Badge variant="outline" className="text-lg px-4 py-2 font-bold">
+                {symbol}
+              </Badge>
+              <span className="text-muted-foreground">at</span>
+              <span className="font-bold text-2xl text-foreground">${currentPrice.toFixed(2)}</span>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-8">
-          {/* Hero Signal Card */}
-          <Card className="border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-white to-blue-50 dark:from-slate-800 dark:to-blue-950">
-            <CardHeader className="pb-4">
+        <div className="space-y-10">
+          {/* Hero Trading Signal */}
+          <Card className="border-0 shadow-2xl bg-gradient-card overflow-hidden">
+            <div className="bg-gradient-primary text-white p-8">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-                    <Target className="w-8 h-8 text-blue-600" />
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                    {getSignalIcon(analysis.signal.action)}
                   </div>
                   <div>
-                    <CardTitle className="text-2xl">Trading Signal</CardTitle>
-                    <CardDescription className="text-lg">AI-generated trading recommendation</CardDescription>
+                    <h2 className="text-3xl font-bold mb-2">Trading Signal</h2>
+                    <p className="text-xl opacity-90">AI-powered recommendation with {analysis.signal.confidence}% confidence</p>
                   </div>
                 </div>
                 <div className="text-center">
-                  <Badge className={`${getSignalColor(analysis.signal.action)} text-xl px-6 py-3 font-bold`}>
-                    {analysis.signal.action}
+                  <Badge className={`${getSignalColor(analysis.signal.action)} text-2xl px-8 py-4 font-bold border-0`}>
+                    {getSignalIcon(analysis.signal.action)}
+                    <span className="ml-2">{analysis.signal.action}</span>
                   </Badge>
-                  <p className="text-sm text-muted-foreground mt-2">{analysis.signal.confidence}% Confidence</p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+            
+            <CardContent className="p-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center p-6 rounded-xl bg-white dark:bg-slate-800 border shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">ENTRY PRICE</p>
-                  <p className="text-3xl font-bold text-foreground">${analysis.signal.entryPrice.toFixed(2)}</p>
-                </div>
-                <div className="text-center p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">TARGET</p>
-                  <p className="text-3xl font-bold text-green-600">${analysis.signal.targetPrice.toFixed(2)}</p>
-                </div>
-                <div className="text-center p-6 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">STOP LOSS</p>
-                  <p className="text-3xl font-bold text-red-600">${analysis.signal.stopLoss.toFixed(2)}</p>
-                </div>
-                <div className="text-center p-6 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">RISK:REWARD</p>
-                  <p className="text-3xl font-bold text-blue-600">{analysis.signal.riskReward}:1</p>
-                </div>
+                {[
+                  { label: 'Entry Price', value: `$${analysis.signal.entryPrice.toFixed(2)}`, color: 'bg-blue-50 border-blue-200 text-blue-900' },
+                  { label: 'Target Price', value: `$${analysis.signal.targetPrice.toFixed(2)}`, color: 'bg-green-50 border-green-200 text-green-900' },
+                  { label: 'Stop Loss', value: `$${analysis.signal.stopLoss.toFixed(2)}`, color: 'bg-red-50 border-red-200 text-red-900' },
+                  { label: 'Risk:Reward', value: `${analysis.signal.riskReward}:1`, color: 'bg-purple-50 border-purple-200 text-purple-900' }
+                ].map((item, i) => (
+                  <div key={i} className={`text-center p-6 rounded-xl border-2 ${item.color} hover:shadow-lg transition-all`}>
+                    <p className="text-sm font-semibold mb-3 opacity-70">{item.label}</p>
+                    <p className="text-3xl font-bold">{item.value}</p>
+                  </div>
+                ))}
               </div>
               
-              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border">
-                <div className="flex items-center justify-center gap-2">
-                  <Zap className="w-5 h-5 text-blue-600" />
-                  <p className="text-lg font-semibold">
-                    Timeframe: <span className="text-blue-600">{analysis.signal.timeframe}</span>
-                  </p>
+              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+                <div className="flex items-center justify-center gap-3">
+                  <Timer className="w-6 h-6 text-blue-600" />
+                  <span className="text-xl font-bold text-blue-900">
+                    Recommended Timeframe: {analysis.signal.timeframe}
+                  </span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Risk Management & Technical Analysis Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Risk & Technical Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* Risk Management */}
-            <Card className="border-2 shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-red-100 dark:bg-red-900">
+            <Card className="border-0 shadow-xl bg-gradient-card">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                     <Shield className="w-6 h-6 text-red-600" />
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">Risk Management</CardTitle>
-                    <CardDescription>Position sizing and risk assessment</CardDescription>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">Risk Management</CardTitle>
+                    <CardDescription className="text-lg">Position sizing and risk assessment</CardDescription>
                   </div>
-                  <Badge className={`${getRiskColor(analysis.risk.riskLevel)} ml-auto`} variant="outline">
+                  <Badge className={`${getRiskColor(analysis.risk.riskLevel)} px-4 py-2 font-bold text-lg border-2`}>
                     {analysis.risk.riskLevel} RISK
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-muted/50 border">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">POSITION SIZE</p>
-                    <p className="text-2xl font-bold">{analysis.risk.positionSize}%</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">MAX LOSS</p>
-                    <p className="text-2xl font-bold text-red-600">${analysis.risk.maxLoss}</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">RISK %</p>
-                    <p className="text-2xl font-bold text-orange-600">{analysis.risk.riskPercentage}%</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">VOLATILITY</p>
-                    <p className="text-2xl font-bold text-purple-600">{analysis.risk.volatility}%</p>
-                  </div>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-2 gap-6">
+                  {[
+                    { label: 'Position Size', value: `${analysis.risk.positionSize}%`, color: 'bg-blue-50 border-blue-200 text-blue-900' },
+                    { label: 'Max Loss', value: `$${analysis.risk.maxLoss}`, color: 'bg-red-50 border-red-200 text-red-900' },
+                    { label: 'Risk Percentage', value: `${analysis.risk.riskPercentage}%`, color: 'bg-orange-50 border-orange-200 text-orange-900' },
+                    { label: 'Volatility', value: `${analysis.risk.volatility}%`, color: 'bg-purple-50 border-purple-200 text-purple-900' }
+                  ].map((item, i) => (
+                    <div key={i} className={`text-center p-4 rounded-lg border-2 ${item.color} hover:shadow-md transition-all`}>
+                      <p className="text-sm font-semibold mb-2 opacity-70">{item.label}</p>
+                      <p className="text-2xl font-bold">{item.value}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
             {/* Technical Analysis */}
-            <Card className="border-2 shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-green-100 dark:bg-green-900">
+            <Card className="border-0 shadow-xl bg-gradient-card">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <BarChart3 className="w-6 h-6 text-green-600" />
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">Technical Analysis</CardTitle>
-                    <CardDescription>Key technical indicators and levels</CardDescription>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">Technical Analysis</CardTitle>
+                    <CardDescription className="text-lg">Key indicators and price levels</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2 ml-auto">
+                  <div className="flex items-center gap-2">
                     {getTrendIcon(analysis.technical.trend)}
-                    <Badge variant="outline">{analysis.technical.trend}</Badge>
+                    <Badge variant="outline" className="px-4 py-2 font-bold text-lg">
+                      {analysis.technical.trend}
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">SUPPORT</p>
-                    <p className="text-2xl font-bold text-green-600">${analysis.technical.support.toFixed(2)}</p>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="text-center p-4 rounded-lg border-2 bg-green-50 border-green-200 text-green-900 hover:shadow-md transition-all">
+                    <p className="text-sm font-semibold mb-2 opacity-70">Support Level</p>
+                    <p className="text-2xl font-bold">${analysis.technical.support.toFixed(2)}</p>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">RESISTANCE</p>
-                    <p className="text-2xl font-bold text-red-600">${analysis.technical.resistance.toFixed(2)}</p>
+                  <div className="text-center p-4 rounded-lg border-2 bg-red-50 border-red-200 text-red-900 hover:shadow-md transition-all">
+                    <p className="text-sm font-semibold mb-2 opacity-70">Resistance Level</p>
+                    <p className="text-2xl font-bold">${analysis.technical.resistance.toFixed(2)}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 rounded-lg bg-muted/50 border">
-                    <p className="text-sm text-muted-foreground mb-1">RSI</p>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="text-center p-4 rounded-lg border bg-muted/50 hover:shadow-md transition-all">
+                    <p className="text-sm font-semibold mb-2 text-muted-foreground">RSI</p>
                     <p className="text-xl font-bold text-purple-600">{analysis.technical.rsi}</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50 border">
-                    <p className="text-sm text-muted-foreground mb-1">MACD</p>
+                  <div className="text-center p-4 rounded-lg border bg-muted/50 hover:shadow-md transition-all">
+                    <p className="text-sm font-semibold mb-2 text-muted-foreground">MACD</p>
                     <p className="text-lg font-bold text-green-600">{analysis.technical.macd}</p>
                   </div>
                 </div>
@@ -392,59 +413,51 @@ const AIAnalysisDetails: React.FC = () => {
           </div>
 
           {/* AI Explanation */}
-          <Card className="border-2 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900">
+          <Card className="border-0 shadow-xl bg-gradient-card">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                   <Brain className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">AI Analysis Explanation</CardTitle>
-                  <CardDescription>Detailed reasoning behind the recommendation</CardDescription>
+                  <CardTitle className="text-2xl">AI Analysis Explanation</CardTitle>
+                  <CardDescription className="text-lg">Detailed reasoning behind our recommendation</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
-              <Alert className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-                <Brain className="h-5 w-5 text-blue-600" />
-                <AlertDescription className="text-base leading-relaxed font-medium">
+            <CardContent className="p-8">
+              <Alert className="mb-8 border-2 border-blue-200 bg-blue-50 shadow-sm">
+                <Brain className="h-6 w-6 text-blue-600" />
+                <AlertDescription className="text-lg leading-relaxed font-medium text-blue-900">
                   {analysis.explanation}
                 </AlertDescription>
               </Alert>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200">
-                  <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-green-800 dark:text-green-200">High Probability</p>
-                    <p className="text-sm text-green-600 dark:text-green-400">Strong technical setup</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { icon: CheckCircle, title: 'High Probability Setup', desc: 'Strong technical confirmation', color: 'green' },
+                  { icon: DollarSign, title: 'Excellent Risk:Reward', desc: `${analysis.signal.riskReward}:1 ratio`, color: 'blue' },
+                  { icon: Shield, title: 'Controlled Risk', desc: `${analysis.risk.riskPercentage}% portfolio risk`, color: 'orange' }
+                ].map((item, i) => (
+                  <div key={i} className={`flex items-center gap-4 p-6 rounded-xl bg-${item.color}-50 border-2 border-${item.color}-200 hover:shadow-lg transition-all`}>
+                    <item.icon className={`w-8 h-8 text-${item.color}-600 flex-shrink-0`} />
+                    <div>
+                      <p className={`font-bold text-lg text-${item.color}-900`}>{item.title}</p>
+                      <p className={`text-sm text-${item.color}-700`}>{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200">
-                  <DollarSign className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-blue-800 dark:text-blue-200">Great Risk:Reward</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">{analysis.signal.riskReward}:1 ratio</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200">
-                  <Shield className="w-6 h-6 text-orange-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-orange-800 dark:text-orange-200">Controlled Risk</p>
-                    <p className="text-sm text-orange-600 dark:text-orange-400">{analysis.risk.riskPercentage}% portfolio risk</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
           {/* Disclaimer */}
-          <Alert className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20">
+          <Alert className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 shadow-lg">
             <AlertTriangle className="h-6 w-6 text-amber-600" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200 text-base font-medium">
+            <AlertDescription className="text-amber-900 text-lg font-medium">
               <strong>Important Disclaimer:</strong> This analysis is for educational purposes only and does not constitute financial advice. 
               Trading involves substantial risk and may result in losses. Always conduct your own research and consider your financial situation 
-              before making any investment decisions.
+              before making any investment decisions. Past performance does not guarantee future results.
             </AlertDescription>
           </Alert>
         </div>
