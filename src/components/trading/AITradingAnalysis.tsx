@@ -167,193 +167,166 @@ export const AITradingAnalysis: React.FC<AIAnalysisProps> = ({ symbol, currentPr
       )}
 
       {analysis && (
-        <div className="space-y-8">
-          {/* Trading Signal */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Target className="w-5 h-5 text-primary" />
-                  <span>Trading Signal</span>
+        <div className="space-y-4">
+          {/* Trading Signal - Compact Design */}
+          <Card className="border shadow-md">
+            <CardHeader className="pb-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  <CardTitle className="text-lg">Trading Signal</CardTitle>
                   <Badge className={getSignalColor(analysis.signal.action)}>
                     {analysis.signal.action}
                   </Badge>
                 </div>
-                <Badge variant="outline" className="text-sm">
+                <Badge variant="outline" className="text-xs">
                   {analysis.signal.confidence}% Confidence
                 </Badge>
-              </CardTitle>
-              <CardDescription>
-                AI-generated trading recommendation with detailed price targets
-              </CardDescription>
+              </div>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div className="text-center p-4 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Entry Price</p>
-                  <p className="text-xl font-bold text-foreground mt-1">${analysis.signal.entryPrice.toFixed(2)}</p>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="text-center p-3 rounded border bg-muted/30">
+                  <p className="text-xs text-muted-foreground font-medium">ENTRY PRICE</p>
+                  <p className="text-lg font-bold">${analysis.signal.entryPrice.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Target</p>
-                  <p className="text-xl font-bold text-green-600 mt-1">${analysis.signal.targetPrice.toFixed(2)}</p>
+                <div className="text-center p-3 rounded border bg-green-50 dark:bg-green-950/30">
+                  <p className="text-xs text-muted-foreground font-medium">TARGET</p>
+                  <p className="text-lg font-bold text-green-600">${analysis.signal.targetPrice.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Stop Loss</p>
-                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.signal.stopLoss.toFixed(2)}</p>
+                <div className="text-center p-3 rounded border bg-red-50 dark:bg-red-950/30">
+                  <p className="text-xs text-muted-foreground font-medium">STOP LOSS</p>
+                  <p className="text-lg font-bold text-red-600">${analysis.signal.stopLoss.toFixed(2)}</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">R:R Ratio</p>
-                  <p className="text-xl font-bold text-blue-600 mt-1">{analysis.signal.riskReward}:1</p>
+                <div className="text-center p-3 rounded border bg-blue-50 dark:bg-blue-950/30">
+                  <p className="text-xs text-muted-foreground font-medium">R:R RATIO</p>
+                  <p className="text-lg font-bold text-blue-600">{analysis.signal.riskReward}:1</p>
                 </div>
               </div>
-              <div className="p-4 bg-primary/5 rounded-lg border">
-                <p className="text-sm font-medium">
-                  <span className="text-muted-foreground">Timeframe:</span> 
-                  <span className="ml-2 text-foreground">{analysis.signal.timeframe}</span>
-                </p>
+              <div className="mt-3 p-2 bg-primary/5 rounded text-center">
+                <p className="text-sm">Timeframe: <span className="font-semibold">{analysis.signal.timeframe}</span></p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Risk Management */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Shield className="w-5 h-5 text-red-600" />
-                  <span>Risk Management</span>
+          {/* Risk Management & Technical Analysis - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Risk Management */}
+            <Card className="border shadow-md">
+              <CardHeader className="pb-3 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20">
+                <div className="flex items-center space-x-2">
+                  <Shield className="w-4 h-4 text-red-600" />
+                  <CardTitle className="text-lg">Risk Management</CardTitle>
                   <Badge className={`${getRiskColor(analysis.risk.riskLevel)} bg-white/50 dark:bg-black/50`}>
-                    {analysis.risk.riskLevel} RISK
+                    {analysis.risk.riskLevel}
                   </Badge>
                 </div>
-              </CardTitle>
-              <CardDescription>
-                Position sizing and risk parameters for safe trading
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-4 rounded-lg bg-muted/20 border">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Position Size</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{analysis.risk.positionSize}%</p>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 rounded border bg-muted/30">
+                    <p className="text-xs text-muted-foreground font-medium">POSITION SIZE</p>
+                    <p className="text-lg font-bold">{analysis.risk.positionSize}%</p>
+                  </div>
+                  <div className="text-center p-3 rounded border bg-red-50 dark:bg-red-950/30">
+                    <p className="text-xs text-muted-foreground font-medium">MAX LOSS</p>
+                    <p className="text-lg font-bold text-red-600">${analysis.risk.maxLoss}</p>
+                  </div>
+                  <div className="text-center p-3 rounded border bg-orange-50 dark:bg-orange-950/30">
+                    <p className="text-xs text-muted-foreground font-medium">RISK %</p>
+                    <p className="text-lg font-bold text-orange-600">{analysis.risk.riskPercentage}%</p>
+                  </div>
+                  <div className="text-center p-3 rounded border bg-purple-50 dark:bg-purple-950/30">
+                    <p className="text-xs text-muted-foreground font-medium">VOLATILITY</p>
+                    <p className="text-lg font-bold text-purple-600">{analysis.risk.volatility}%</p>
+                  </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Max Loss</p>
-                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.risk.maxLoss}</p>
-                </div>
-                <div className="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Risk %</p>
-                  <p className="text-xl font-bold text-orange-600 mt-1">{analysis.risk.riskPercentage}%</p>
-                </div>
-                <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Volatility</p>
-                  <p className="text-xl font-bold text-purple-600 mt-1">{analysis.risk.volatility}%</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Technical Analysis */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <BarChart3 className="w-5 h-5 text-blue-600" />
-                  <span>Technical Analysis</span>
+            {/* Technical Analysis */}
+            <Card className="border shadow-md">
+              <CardHeader className="pb-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  <CardTitle className="text-lg">Technical Analysis</CardTitle>
                   <Badge variant="outline" className="bg-white/50 dark:bg-black/50">
                     {analysis.technical.trend}
                   </Badge>
                 </div>
-              </CardTitle>
-              <CardDescription>
-                Key technical indicators and support/resistance levels
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Support</p>
-                  <p className="text-xl font-bold text-green-600 mt-1">${analysis.technical.support.toFixed(2)}</p>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="text-center p-3 rounded border bg-green-50 dark:bg-green-950/30">
+                    <p className="text-xs text-muted-foreground font-medium">SUPPORT</p>
+                    <p className="text-lg font-bold text-green-600">${analysis.technical.support.toFixed(2)}</p>
+                  </div>
+                  <div className="text-center p-3 rounded border bg-red-50 dark:bg-red-950/30">
+                    <p className="text-xs text-muted-foreground font-medium">RESISTANCE</p>
+                    <p className="text-lg font-bold text-red-600">${analysis.technical.resistance.toFixed(2)}</p>
+                  </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Resistance</p>
-                  <p className="text-xl font-bold text-red-600 mt-1">${analysis.technical.resistance.toFixed(2)}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-2 rounded border bg-muted/20">
+                    <p className="text-xs text-muted-foreground">RSI</p>
+                    <p className="font-bold text-purple-600">{analysis.technical.rsi}</p>
+                  </div>
+                  <div className="text-center p-2 rounded border bg-muted/20">
+                    <p className="text-xs text-muted-foreground">MACD</p>
+                    <p className="font-bold text-green-600 text-xs">{analysis.technical.macd}</p>
+                  </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">RSI</p>
-                  <p className="text-xl font-bold text-purple-600 mt-1">{analysis.technical.rsi}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
-                  <p className="text-xs font-medium text-muted-foreground">SMA 20</p>
-                  <p className="text-lg font-bold text-orange-600">${analysis.technical.movingAverages.sma20.toFixed(2)}</p>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                  <p className="text-xs font-medium text-muted-foreground">SMA 50</p>
-                  <p className="text-lg font-bold text-blue-600">${analysis.technical.movingAverages.sma50.toFixed(2)}</p>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <p className="text-xs font-medium text-muted-foreground">MACD</p>
-                  <p className="text-sm font-bold text-green-600">{analysis.technical.macd}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* AI Explanation */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-              <CardTitle className="flex items-center space-x-3">
-                <Brain className="w-5 h-5 text-purple-600" />
-                <span>AI Analysis Explanation</span>
-              </CardTitle>
-              <CardDescription>
-                Detailed reasoning behind the trading recommendation
-              </CardDescription>
+          {/* AI Explanation - Compact */}
+          <Card className="border shadow-md">
+            <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+              <div className="flex items-center space-x-2">
+                <Brain className="w-4 h-4 text-purple-600" />
+                <CardTitle className="text-lg">AI Analysis Explanation</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="pt-6">
-              <Alert className="mb-6">
+            <CardContent className="pt-4">
+              <Alert className="mb-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="text-sm leading-relaxed">
+                <AlertDescription className="text-sm">
                   {analysis.explanation}
                 </AlertDescription>
               </Alert>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="flex items-center space-x-2 p-3 rounded bg-green-50 dark:bg-green-950/30 border">
+                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-green-800 dark:text-green-200">High Probability Setup</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">Technical confluence</p>
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-200">High Probability</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Technical setup</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                  <DollarSign className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <div className="flex items-center space-x-2 p-3 rounded bg-blue-50 dark:bg-blue-950/30 border">
+                  <DollarSign className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Favorable R:R</p>
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Good R:R</p>
                     <p className="text-xs text-blue-600 dark:text-blue-400">{analysis.signal.riskReward}:1 ratio</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
-                  <Shield className="w-6 h-6 text-orange-600 flex-shrink-0" />
+                <div className="flex items-center space-x-2 p-3 rounded bg-orange-50 dark:bg-orange-950/30 border">
+                  <Shield className="w-4 h-4 text-orange-600 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">Risk Controlled</p>
-                    <p className="text-xs text-orange-600 dark:text-orange-400">{analysis.risk.riskPercentage}% portfolio risk</p>
+                    <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">Controlled Risk</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400">{analysis.risk.riskPercentage}% risk</p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Disclaimer */}
-          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 border-2">
+          {/* Compact Disclaimer */}
+          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
-              <strong>Disclaimer:</strong> This analysis is for educational purposes only and should not be considered as financial advice. 
-              Always conduct your own research and consider consulting with a financial advisor before making investment decisions. 
-              Trading involves significant risk and you may lose money.
+            <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm">
+              <strong>Disclaimer:</strong> Educational purposes only. Not financial advice. Trading involves risk.
             </AlertDescription>
           </Alert>
         </div>
