@@ -364,11 +364,11 @@ export const EnhancedTradingChart = () => {
                 <Skeleton className="h-[120px] w-full" />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {/* Main Candlestick Chart */}
-                <div className="h-[500px] bg-card rounded-lg border border-border p-4">
+                <div className="h-[700px] bg-card rounded-lg border border-border p-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
                         dataKey="date" 
@@ -401,9 +401,9 @@ export const EnhancedTradingChart = () => {
                 </div>
                 
                 {/* Volume Chart */}
-                <div className="h-[150px] bg-card rounded-lg border border-border p-4">
+                <div className="h-[200px] bg-card rounded-lg border border-border p-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 40, left: 40, bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
                         dataKey="date" 
