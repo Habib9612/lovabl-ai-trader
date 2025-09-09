@@ -184,7 +184,16 @@ export const ImageChartAnalysis = () => {
       });
 
       if (error) {
-        throw new Error(error.message);
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to analyze chart');
+      }
+
+      if (!data) {
+        throw new Error('No response data received');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Analysis failed');
       }
 
       // Parse Gemini response and create structured results
@@ -200,7 +209,23 @@ export const ImageChartAnalysis = () => {
       toast.success('Chart analysis completed with Gemini AI!');
     } catch (error) {
       console.error('Error analyzing chart:', error);
-      toast.error('Failed to analyze chart: ' + (error as Error).message);
+      
+      // Provide fallback results so user can see the interface
+      const fallbackResults = selectedStrategies.map(strategyId => {
+        const strategy = strategies.find(s => s.id === strategyId);
+        return {
+          strategy: strategyId,
+          confidence: 75,
+          signal: 'neutral' as const,
+          reasoning: `${strategy?.name || 'Strategy'} analysis temporarily unavailable. Please check your connection and try again.`,
+          entryPrice: undefined,
+          stopLoss: undefined,
+          takeProfit: undefined
+        };
+      });
+      
+      setAnalysisResults(fallbackResults);
+      toast.error('Analysis error - showing placeholder results. Error: ' + (error as Error).message);
     } finally {
       setAnalyzing(false);
     }
