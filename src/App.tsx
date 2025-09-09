@@ -10,7 +10,7 @@ import Portfolio from '@/pages/dashboard/Portfolio';
 import Education from '@/pages/dashboard/Education';
 import Watchlist from '@/pages/dashboard/Watchlist';
 import AIAnalytics from '@/pages/dashboard/AIAnalytics';
-import { AIAnalysisDetails } from '@/pages/dashboard/AIAnalysisDetails';
+import AIAnalysisDetails from '@/pages/dashboard/AIAnalysisDetails';
 import Settings from '@/pages/dashboard/Settings';
 import NotFound from '@/pages/NotFound';
 
