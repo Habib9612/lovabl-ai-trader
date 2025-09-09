@@ -41,7 +41,7 @@ const RiskManagement = () => {
 
   const [newRule, setNewRule] = useState({
     portfolio_id: '',
-    rule_type: 'position_size' as const,
+    rule_type: 'position_size' as string,
     rule_value: 0
   });
 

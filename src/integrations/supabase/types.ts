@@ -152,6 +152,13 @@ export type Database = {
             referencedRelation: "community_messages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_community_messages_asset_id"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
         ]
       }
       edge_logs: {
@@ -440,6 +447,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_signal_followers_signal_id"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "signal_followers_signal_id_fkey"
             columns: ["signal_id"]
             isOneToOne: false
@@ -501,6 +515,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_signals_asset_id"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "signals_asset_id_fkey"
             columns: ["asset_id"]

@@ -98,7 +98,7 @@ const Signals = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMySignals((data || []) as Signal[]);
+      setMySignals((data || []) as any);
     } catch (error) {
       console.error('Error fetching my signals:', error);
     }
@@ -120,7 +120,7 @@ const Signals = () => {
         .eq('follower_id', user.id);
 
       if (error) throw error;
-      setFollowedSignals((data?.map(item => item.signals).filter(Boolean) || []) as Signal[]);
+      setFollowedSignals((data?.map(item => item.signals).filter(Boolean) || []) as any);
     } catch (error) {
       console.error('Error fetching followed signals:', error);
     }

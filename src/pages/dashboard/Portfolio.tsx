@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
 import { TrendingUp, TrendingDown, Plus, Wallet, Target, DollarSign, Percent } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const portfolioData = [
   { name: 'AAPL', value: 25000, percentage: 35, change: 5.2, shares: 150 },
@@ -30,6 +32,28 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accen
 export default function Portfolio() {
   const [newSymbol, setNewSymbol] = useState('');
   const [newShares, setNewShares] = useState('');
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleAddPosition = () => {
+    if (!newSymbol || !newShares) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both symbol and number of shares.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add position logic here - for now just show success
+    toast({
+      title: "Position Added",
+      description: `Added ${newShares} shares of ${newSymbol} to your portfolio.`,
+    });
+    
+    setNewSymbol('');
+    setNewShares('');
+  };
 
   const totalValue = portfolioData.reduce((sum, item) => sum + item.value, 0);
   const totalGain = 3200;
@@ -43,7 +67,10 @@ export default function Portfolio() {
           <h1 className="text-3xl font-bold tracking-tight">Portfolio</h1>
           <p className="text-muted-foreground">Track your investments and performance</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => navigate('/dashboard/trading')}
+        >
           <Plus className="w-4 h-4" />
           Add Position
         </Button>
@@ -241,7 +268,11 @@ export default function Portfolio() {
                   />
                 </div>
               </div>
-              <Button className="w-full" disabled={!newSymbol || !newShares}>
+              <Button 
+                className="w-full" 
+                disabled={!newSymbol || !newShares}
+                onClick={handleAddPosition}
+              >
                 Add Position
               </Button>
             </CardContent>

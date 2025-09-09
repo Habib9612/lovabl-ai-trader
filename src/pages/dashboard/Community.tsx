@@ -38,7 +38,7 @@ const Community = () => {
 
   const [newMessage, setNewMessage] = useState({
     content: '',
-    message_type: 'general' as const,
+    message_type: 'general' as string,
     asset_symbol: ''
   });
 
@@ -244,7 +244,7 @@ const Community = () => {
                     </SelectContent>
                   </Select>
                   
-                  {(newMessage.message_type === 'signal' || newMessage.message_type === 'analysis') && (
+                  {(['signal', 'analysis'].includes(newMessage.message_type)) && (
                     <Input
                       placeholder="Asset Symbol (e.g., AAPL)"
                       value={newMessage.asset_symbol}

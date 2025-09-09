@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -62,6 +63,8 @@ const assetAllocation = [
 ];
 
 const DashboardHome = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -72,7 +75,11 @@ const DashboardHome = () => {
             Here's your trading overview for today.
           </p>
         </div>
-        <Button variant="hero" size="lg">
+        <Button 
+          variant="hero" 
+          size="lg"
+          onClick={() => navigate('/dashboard/trading')}
+        >
           <Play className="h-4 w-4 mr-2" />
           Start Trading
         </Button>
