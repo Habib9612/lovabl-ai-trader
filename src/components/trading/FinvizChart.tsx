@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ComposedChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ComposedChart } from 'recharts';
 import { TrendingUp, TrendingDown, BarChart3, Activity } from 'lucide-react';
 import { useFinvizData } from '@/hooks/useFinvizData';
 import { AITradingAnalysis } from './AITradingAnalysis';
@@ -89,44 +89,6 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(0)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
     return value.toString();
-  };
-
-  // Custom Candlestick component
-  const Candlestick = (props: any) => {
-    const { payload, x, y, width, height } = props;
-    if (!payload) return null;
-    
-    const { open, high, low, close } = payload;
-    const isUp = close > open;
-    const color = isUp ? '#22c55e' : '#ef4444';
-    const wickX = x + width / 2;
-    const bodyTop = Math.min(open, close);
-    const bodyBottom = Math.max(open, close);
-    const bodyHeight = Math.abs(close - open);
-    
-    return (
-      <g>
-        {/* Wick */}
-        <line
-          x1={wickX}
-          y1={high}
-          x2={wickX}
-          y2={low}
-          stroke={color}
-          strokeWidth={1}
-        />
-        {/* Body */}
-        <rect
-          x={x + 1}
-          y={bodyTop}
-          width={width - 2}
-          height={Math.max(bodyHeight, 1)}
-          fill={isUp ? color : color}
-          stroke={color}
-          strokeWidth={1}
-        />
-      </g>
-    );
   };
 
   return (
@@ -245,11 +207,12 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
                 {/* Price Chart */}
                 <div className="h-[350px] border-b border-slate-700">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                          <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
+                        <linearGradient id="priceAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
+                          <stop offset="50%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.1}/>
+                          <stop offset="100%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid 
@@ -282,42 +245,44 @@ export const FinvizChart: React.FC<ChartProps> = ({ symbol = 'AAPL' }) => {
                         }}
                         formatter={(value: any, name: string) => {
                           if (name === 'close') return [`$${value.toFixed(2)}`, 'Close'];
-                          if (name === 'open') return [`$${value.toFixed(2)}`, 'Open'];
-                          if (name === 'high') return [`$${value.toFixed(2)}`, 'High'];
-                          if (name === 'low') return [`$${value.toFixed(2)}`, 'Low'];
                           return [value, name];
                         }}
                       />
                       
                       {/* Moving Averages */}
-                      <Line
-                        type="monotone"
-                        dataKey="sma20"
-                        stroke="#f59e0b"
-                        strokeWidth={1}
-                        dot={false}
-                        connectNulls={false}
-                        name="SMA 20"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="sma50"
-                        stroke="#8b5cf6"
-                        strokeWidth={1}
-                        dot={false}
-                        connectNulls={false}
-                        name="SMA 50"
-                      />
+                      {chartData[0]?.sma20 && (
+                        <Line
+                          type="monotone"
+                          dataKey="sma20"
+                          stroke="#f59e0b"
+                          strokeWidth={1}
+                          dot={false}
+                          connectNulls={false}
+                          name="SMA 20"
+                        />
+                      )}
+                      {chartData[0]?.sma50 && (
+                        <Line
+                          type="monotone"
+                          dataKey="sma50"
+                          stroke="#8b5cf6"
+                          strokeWidth={1}
+                          dot={false}
+                          connectNulls={false}
+                          name="SMA 50"
+                        />
+                      )}
                       
-                      {/* Area under curve */}
+                      {/* Price Area */}
                       <Area
                         type="monotone"
                         dataKey="close"
-                        fill="url(#areaGradient)"
-                        stroke="none"
-                        fillOpacity={0.3}
+                        fill="url(#priceAreaGradient)"
+                        stroke={isPositive ? "#22c55e" : "#ef4444"}
+                        strokeWidth={2}
+                        fillOpacity={1}
                       />
-                    </ComposedChart>
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 
