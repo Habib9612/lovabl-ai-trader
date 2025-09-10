@@ -86,6 +86,8 @@ ${JSON.stringify(mockOpenBBData)}
 
 Analyze the data and provide insights in the exact JSON format specified above.`;
 
+    console.log('Calling Gemini API with prompt length:', prompt.length);
+    
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
@@ -98,9 +100,6 @@ Analyze the data and provide insights in the exact JSON format specified above.`
           }]
         }],
         generationConfig: {
-          temperature: 0.3,
-          topP: 0.8,
-          topK: 10,
           maxOutputTokens: 2048,
         },
       }),
