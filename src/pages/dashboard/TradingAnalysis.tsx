@@ -9,6 +9,7 @@ import { FinvizScreener } from '@/components/trading/FinvizScreener';
 import { FinvizChart } from '@/components/trading/FinvizChart';
 import { ICTAnalysis } from '@/components/trading/ICTAnalysis';
 import { QuantResearchAgent } from '@/components/trading/QuantResearchAgent';
+import { OandaTradingPanel } from '@/components/trading/OandaTradingPanel';
 
 const TradingAnalysis = () => {
   return (
@@ -37,7 +38,7 @@ const TradingAnalysis = () => {
       {/* Beautiful Tab Navigation */}
       <Tabs defaultValue="finviz-chart" className="w-full">
         <div className="flex justify-center mb-8">
-          <TabsList className="grid grid-cols-8 w-full max-w-6xl h-14 bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+          <TabsList className="grid grid-cols-9 w-full max-w-6xl h-14 bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
             <TabsTrigger 
               value="finviz-chart" 
               className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
@@ -86,6 +87,12 @@ const TradingAnalysis = () => {
             >
               Quant Research
             </TabsTrigger>
+            <TabsTrigger 
+              value="live-trading" 
+              className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
+            >
+              Live Trading
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -120,6 +127,10 @@ const TradingAnalysis = () => {
 
           <TabsContent value="quant-research" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
             <QuantResearchAgent />
+          </TabsContent>
+
+          <TabsContent value="live-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
+            <OandaTradingPanel />
           </TabsContent>
         </div>
       </Tabs>
