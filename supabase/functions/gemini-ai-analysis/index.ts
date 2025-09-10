@@ -134,7 +134,7 @@ serve(async (req) => {
         7. **Risk Assessment:** Potential false signals and invalidation levels
         8. **Trade Management:** Partial profit rules and position adjustment
         
-        Format as structured JSON-like analysis that can be parsed for systematic trading decisions. Include specific price levels, confidence ratings (1-100), and detailed reasoning for each signal.
+        Format as structured JSON-like analysis that can be parsed for systematic trading decisions. Include specific price levels, confidence ratings (1-100), and detailed reasoning for each signal.`;
         
         // For image analysis, we need to use the OpenRouter Vision API
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
