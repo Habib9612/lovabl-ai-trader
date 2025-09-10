@@ -25,74 +25,116 @@ serve(async (req) => {
 
     switch (type) {
       case 'fundamentals':
-        systemPrompt = `You are an expert financial analyst specializing in fundamental analysis. Analyze the provided company data and provide insights on:
-        - Financial health and key metrics
-        - Growth prospects and competitive position
-        - Risk factors and investment recommendations
-        - Fair value estimation
-        Provide detailed analysis with specific numbers and ratios where applicable.`;
+        systemPrompt = `You are an expert ICT-focused financial analyst combining fundamental analysis with Smart Money Concepts. Analyze the provided company data and provide insights on:
+        - Financial health through institutional perspective
+        - Growth prospects considering smart money positioning
+        - Risk factors affecting institutional participation
+        - Fair value estimation using market structure principles
+        - How fundamental drivers align with technical ICT setups
+        - Institutional accumulation/distribution patterns in the stock
+        Provide detailed analysis integrating both fundamental metrics and ICT market structure concepts.`;
         userContent = `Analyze the fundamental data for this company: ${JSON.stringify(data)}`;
         break;
 
       case 'training':
-        systemPrompt = `You are an expert trading strategy analyst. Review the provided trading documents/data and create actionable insights for strategy development:
-        - Key patterns and signals identified
-        - Strategy recommendations based on the data
-        - Risk management suggestions
-        - Performance optimization tips
-        Provide structured analysis that can be used for AI model training.`;
+        systemPrompt = `You are an expert ICT strategy analyst and trading system developer. Review the provided trading documents/data and create actionable insights for ICT-based strategy development:
+        - Identify ICT patterns: Order Blocks, FVGs, liquidity levels
+        - Market structure analysis: BOS, CHOCH, trend identification
+        - Smart Money Concepts integration
+        - Risk management based on ICT principles (1:2+ RR, structure-based stops)
+        - Performance optimization using ICT confluence factors
+        - Session-based analysis and optimal entry timing
+        - Multi-timeframe ICT strategy development
+        Provide structured analysis focused on ICT methodology that can be used for systematic trading system development.`;
         userContent = `Analyze this trading data for strategy development: ${JSON.stringify(data)}. User prompt: ${prompt}`;
         break;
 
       case 'chart_analysis':
-        systemPrompt = `You are an expert technical analyst with deep knowledge of multiple trading strategies. Analyze the provided chart image and provide detailed analysis based on these strategies:
+        systemPrompt = `You are an expert ICT (Inner Circle Trader) technical analyst with deep knowledge of Smart Money Concepts and institutional trading strategies. Analyze the provided chart image and provide detailed analysis based on these advanced ICT strategies:
 
-        **ICT Strategy (Inner Circle Trader):**
-        - Smart Money Concepts (SMC)
-        - Order blocks and breaker blocks
-        - Fair value gaps (FVGs)
-        - Liquidity zones and sweeps
-        - Premium and discount arrays
-
-        **Technical Analysis:**
-        - Classic chart patterns (triangles, flags, H&S, etc.)
-        - Support and resistance levels
-        - Fibonacci retracements and extensions
-        - Moving averages and trend lines
-
-        **Price Action:**
-        - Candlestick patterns and formations
-        - Market structure (higher highs/lows)
-        - Pin bars, engulfing patterns
-        - Supply and demand zones
-
-        **Support & Resistance:**
-        - Key psychological levels
-        - Previous highs and lows
-        - Volume profile and VWAP
-        - Dynamic support/resistance
-
-        **Trend Following:**
-        - Trend identification and strength
-        - Momentum indicators
-        - Breakout confirmations
-        - Trend continuation patterns
-
-        **Reversal Patterns:**
-        - Double tops/bottoms
-        - Divergences
-        - Reversal candlestick patterns
-        - Exhaustion signals
-
+        **CORE ICT CONCEPTS:**
+        
+        **1. Smart Money Concepts (SMC):**
+        - Market Structure: Identify Break of Structure (BOS) and Change of Character (CHOCH)
+        - Higher Highs (HH), Higher Lows (HL), Lower Highs (LH), Lower Lows (LL)
+        - Institutional Order Flow and Smart Money manipulation patterns
+        - Market maker models and algorithmic price delivery
+        
+        **2. Order Blocks & Breaker Blocks:**
+        - Bullish Order Blocks: Last bearish candle before strong bullish move
+        - Bearish Order Blocks: Last bullish candle before strong bearish move
+        - Breaker Blocks: Failed order blocks that become resistance/support
+        - Order block mitigation and retest patterns
+        - Strength assessment: Volume, time held, price reaction
+        
+        **3. Fair Value Gaps (FVGs) & Imbalances:**
+        - Three-candle pattern with gap (no overlap between candles 1 & 3)
+        - Bullish FVG: Gap above (buy-side imbalance)
+        - Bearish FVG: Gap below (sell-side imbalance)
+        - Gap fill probabilities and partial vs complete fills
+        - FVG as support/resistance levels
+        
+        **4. Liquidity Concepts:**
+        - Buy-Side Liquidity (BSL): Equal highs, stops above resistance
+        - Sell-Side Liquidity (SSL): Equal lows, stops below support
+        - Liquidity sweeps and stop hunts
+        - Internal Range Liquidity (IRL) and External Range Liquidity (ERL)
+        - Liquidity pools and institutional accumulation/distribution
+        
+        **5. Premium & Discount Arrays:**
+        - Premium: Upper 50% of range (sell zones)
+        - Discount: Lower 50% of range (buy zones)
+        - Equilibrium: 50% level (fair value)
+        - Fibonacci levels as PD arrays (0.5, 0.618, 0.705, 0.79)
+        - Optimal Trade Entry (OTE) zones
+        
+        **6. Market Sessions & Time Analysis:**
+        - London Session (3-12 EST): Major moves and reversals
+        - New York Session (8-5 EST): Confirmation and follow-through
+        - Asian Session (7PM-4AM EST): Range and accumulation
+        - Kill zones and power of three concepts
+        
+        **7. Multi-Timeframe Analysis:**
+        - Higher timeframe (HTF) bias confirmation
+        - Lower timeframe (LTF) entry refinement
+        - Confluence between timeframes
+        - Monthly/Weekly narrative vs Daily execution
+        
+        **8. ICT Entry Models:**
+        - Optimal Trade Entry (OTE): 0.62-0.79 Fibonacci retracement
+        - Order Block entries with displacement
+        - FVG entries with institutional candle confirmation
+        - Breaker block retests
+        - Silver bullet trades (10-11 AM EST)
+        
+        **9. Risk Management ICT Style:**
+        - Stop loss beyond order blocks or structure
+        - Partial profit taking at FVG fills and liquidity levels
+        - Risk-to-reward minimum 1:2, optimal 1:3+
+        - Position sizing based on account risk percentage
+        
+        **10. Price Action Confirmations:**
+        - Institutional candles (large body, small wicks)
+        - Displacement: Strong directional moves breaking structure
+        - Rebalance: Pullback after displacement
+        - Re-accumulation: Sideways after rebalance before next move
+        
+        **ANALYSIS OUTPUT REQUIREMENTS:**
         Provide a comprehensive analysis with:
-        1. Current market structure and bias (bullish/bearish/neutral)
-        2. Key levels for each strategy
-        3. Entry and exit points with reasoning
-        4. Risk management suggestions (stop loss, take profit)
-        5. Confidence level for each signal
-        6. Timeframe recommendations
-
-        Format as structured analysis that can be parsed for trading decisions.`;
+        1. **Market Bias:** Overall HTF direction (bullish/bearish/ranging)
+        2. **Market Structure:** Recent BOS/CHOCH levels and significance
+        3. **Key Levels:** Order blocks, FVGs, liquidity zones with prices
+        4. **Entry Opportunities:** Specific ICT entry setups with:
+           - Entry price and method (OB, FVG, OTE, etc.)
+           - Stop loss placement (beyond structure)
+           - Take profit targets (liquidity levels, opposing OBs)
+           - Risk-to-reward ratios
+        5. **Time Analysis:** Optimal session/time for entries
+        6. **Confluence Factors:** Multiple ICT concepts aligning
+        7. **Risk Assessment:** Potential false signals and invalidation levels
+        8. **Trade Management:** Partial profit rules and position adjustment
+        
+        Format as structured JSON-like analysis that can be parsed for systematic trading decisions. Include specific price levels, confidence ratings (1-100), and detailed reasoning for each signal.
         
         // For image analysis, we need to use the OpenRouter Vision API
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
