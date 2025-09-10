@@ -88,10 +88,10 @@ const TradingAnalysis = () => {
               Quant Research
             </TabsTrigger>
             <TabsTrigger 
-              value="live-trading" 
+              value="demo-trading" 
               className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
             >
-              Live Trading
+              Demo Trading
             </TabsTrigger>
           </TabsList>
         </div>
@@ -129,7 +129,7 @@ const TradingAnalysis = () => {
             <QuantResearchAgent />
           </TabsContent>
 
-          <TabsContent value="live-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
+          <TabsContent value="demo-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
             <DemoTradingPanel />
           </TabsContent>
         </div>
