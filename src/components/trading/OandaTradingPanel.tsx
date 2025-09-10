@@ -98,9 +98,19 @@ export const OandaTradingPanel = () => {
       <Card>
         <CardHeader>
           <CardTitle>OANDA Demo Trading</CardTitle>
-          <CardDescription>Connect to your OANDA demo account to start trading</CardDescription>
+          <CardDescription>
+            To start trading, you need a valid OANDA demo account token.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <h3 className="font-semibold text-amber-800 mb-2">Setup Required:</h3>
+            <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+              <li>Create a free OANDA demo account at <a href="https://www.oanda.com/demo-account/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">oanda.com/demo-account</a></li>
+              <li>Generate an API token from your OANDA account</li>
+              <li>Update the OANDA_DEMO_TOKEN secret with your actual token</li>
+            </ol>
+          </div>
           <Button onClick={loadAccounts} className="w-full">
             Connect to OANDA Demo
           </Button>

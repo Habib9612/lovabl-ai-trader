@@ -116,9 +116,15 @@ export const useOandaTrading = () => {
       });
     } catch (error) {
       console.error('Error loading accounts:', error);
+      let errorMessage = `Failed to load accounts: ${error.message}`;
+      
+      if (error.message.includes('Unauthorized')) {
+        errorMessage = 'Invalid OANDA token. Please check your OANDA_DEMO_TOKEN secret and ensure you have a valid demo account token.';
+      }
+      
       toast({
-        title: "Error",
-        description: `Failed to load accounts: ${error.message}`,
+        title: "Connection Error",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
