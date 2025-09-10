@@ -18,31 +18,37 @@ interface QuantAnalysisRequest {
   memory?: QuantumMemoryEntry[];
 }
 
-class GeminiLLM {
+class OpenRouterLLM {
   private apiKey: string;
   private endpoint: string;
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-    this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    this.endpoint = "https://openrouter.ai/api/v1/chat/completions";
   }
 
   async query(prompt: string): Promise<string> {
-    const headers = { "Content-Type": "application/json" };
+    const headers = { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${this.apiKey}`,
+      "HTTP-Referer": "https://lovable.dev",
+      "X-Title": "Trading Analysis Platform"
+    };
+    
     const payload = {
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        maxOutputTokens: 2048,
-        temperature: 0.7
-      }
+      model: "anthropic/claude-3.5-sonnet",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 2048
     };
 
-    const url = `${this.endpoint}?key=${this.apiKey}`;
-
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.endpoint, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)
@@ -50,8 +56,8 @@ class GeminiLLM {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.candidates && data.candidates.length > 0) {
-          return data.candidates[0].content.parts[0].text;
+        if (data.choices && data.choices.length > 0) {
+          return data.choices[0].message.content;
         } else {
           return "No response generated";
         }
@@ -156,12 +162,12 @@ class QuantumMemory {
 
 class QuantumAgent {
   private memory: QuantumMemory;
-  private llm: GeminiLLM;
+  private llm: OpenRouterLLM;
   private memoryThreshold: number;
 
   constructor(apiKey: string, existingMemories: QuantumMemoryEntry[] = [], memoryThreshold: number = 0.75) {
     this.memory = new QuantumMemory(existingMemories);
-    this.llm = new GeminiLLM(apiKey);
+    this.llm = new OpenRouterLLM(apiKey);
     this.memoryThreshold = memoryThreshold;
   }
 
@@ -211,8 +217,8 @@ Please provide a comprehensive financial analysis in the following JSON format:
   "confidence_level": "High/Medium/Low based on data quality"
 }`;
 
-    // Query Gemini LLM
-    console.log("Querying Gemini LLM for financial analysis...");
+    // Query OpenRouter LLM
+    console.log("Querying OpenRouter LLM for financial analysis...");
     const llmResponse = await this.llm.query(financialPrompt);
 
     // Store in memory if valid response
@@ -271,16 +277,16 @@ serve(async (req) => {
 
   try {
     const { query, memory = [] }: QuantAnalysisRequest = await req.json();
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const openRouterApiKey = Deno.env.get('GEMINI_API_KEY');
 
-    if (!geminiApiKey) {
-      throw new Error('GEMINI_API_KEY not configured');
+    if (!openRouterApiKey) {
+      throw new Error('OpenRouter API key not configured');
     }
 
     console.log('Processing quantum research query:', query);
 
     // Initialize quantum agent with existing memory
-    const agent = new QuantumAgent(geminiApiKey, memory, 0.75);
+    const agent = new QuantumAgent(openRouterApiKey, memory, 0.75);
 
     // Handle the request
     const result = await agent.handleRequest(query);

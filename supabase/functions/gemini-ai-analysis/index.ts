@@ -14,10 +14,10 @@ serve(async (req) => {
 
   try {
     const { type, data, prompt } = await req.json();
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const openRouterApiKey = Deno.env.get('GEMINI_API_KEY');
 
-    if (!geminiApiKey) {
-      throw new Error('Gemini API key not configured');
+    if (!openRouterApiKey) {
+      throw new Error('OpenRouter API key not configured');
     }
 
     let systemPrompt = '';
@@ -94,42 +94,45 @@ serve(async (req) => {
 
         Format as structured analysis that can be parsed for trading decisions.`;
         
-        // For image analysis, we need to use the Gemini Vision API
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+        // For image analysis, we need to use the OpenRouter Vision API
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
             'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://lovable.dev',
+            'X-Title': 'Trading Analysis Platform'
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: systemPrompt },
-                {
-                  inline_data: {
-                    mime_type: data.mimeType || 'image/jpeg',
-                    data: data.base64.split(',')[1] // Remove data:image/...;base64, prefix
-                  }
-                },
-                { text: prompt || 'Analyze this trading chart using the strategies mentioned. Provide specific entry/exit levels and trading recommendations.' }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.3,
-              topK: 32,
-              topP: 0.8,
-              maxOutputTokens: 3048,
-            }
+            model: "anthropic/claude-3.5-sonnet",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: systemPrompt },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:${data.mimeType || 'image/jpeg'};base64,${data.base64.split(',')[1]}`
+                    }
+                  },
+                  { type: "text", text: prompt || 'Analyze this trading chart using the strategies mentioned. Provide specific entry/exit levels and trading recommendations.' }
+                ]
+              }
+            ],
+            temperature: 0.3,
+            max_tokens: 3048
           }),
         });
 
         if (!response.ok) {
           const errorData = await response.text();
-          console.error('Gemini API error:', errorData);
-          throw new Error(`Gemini API error: ${response.status}`);
+          console.error('OpenRouter API error:', errorData);
+          throw new Error(`OpenRouter API error: ${response.status}`);
         }
 
         const result = await response.json();
-        const analysis = result.candidates?.[0]?.content?.parts?.[0]?.text || 'No analysis generated';
+        const analysis = result.choices?.[0]?.message?.content || 'No analysis generated';
 
         return new Response(JSON.stringify({ 
           analysis,
@@ -143,35 +146,39 @@ serve(async (req) => {
     }
 
     // For text-based analysis (fundamentals and training)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://lovable.dev',
+        'X-Title': 'Trading Analysis Platform'
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: systemPrompt },
-            { text: userContent }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        }
+        model: "anthropic/claude-3.5-sonnet",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user", 
+            content: userContent
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Gemini API error:', errorData);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error('OpenRouter API error:', errorData);
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
     const result = await response.json();
-    const analysis = result.candidates?.[0]?.content?.parts?.[0]?.text || 'No analysis generated';
+    const analysis = result.choices?.[0]?.message?.content || 'No analysis generated';
 
     return new Response(JSON.stringify({ 
       analysis,
@@ -181,7 +188,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in gemini-ai-analysis function:', error);
+    console.error('Error in openrouter-ai-analysis function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
       success: false 
