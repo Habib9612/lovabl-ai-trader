@@ -104,7 +104,7 @@ serve(async (req) => {
             'X-Title': 'Trading Analysis Platform'
           },
           body: JSON.stringify({
-            model: "anthropic/claude-3.5-sonnet",
+            model: "meta-llama/llama-3.3-70b-instruct",
             messages: [
               {
                 role: "user",
@@ -155,7 +155,7 @@ serve(async (req) => {
         'X-Title': 'Trading Analysis Platform'
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet",
+        model: "meta-llama/llama-3.3-70b-instruct",
         messages: [
           {
             role: "system",
