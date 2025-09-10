@@ -24,7 +24,7 @@ class GeminiLLM {
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-    this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
+    this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
   }
 
   async query(prompt: string): Promise<string> {
