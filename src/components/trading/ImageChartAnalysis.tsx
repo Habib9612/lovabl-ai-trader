@@ -20,6 +20,14 @@ const strategies = [
   { id: 'reversal', name: 'Reversal Patterns', description: 'Market turning points and reversals' }
 ];
 
+const tradingStyles = [
+  { id: 'scalping', name: 'Scalping', description: '1-15 minute trades, quick profits' },
+  { id: 'day-trading', name: 'Day Trading', description: 'Intraday positions, 15min-4H timeframes' },
+  { id: 'swing', name: 'Swing Trading', description: '1-7 day holds, daily/weekly analysis' },
+  { id: 'momentum', name: 'Momentum Trading', description: 'Following strong directional moves' },
+  { id: 'position', name: 'Position Trading', description: 'Long-term holds, weekly/monthly charts' }
+];
+
 interface AnalysisResult {
   strategy: string;
   confidence: number;
@@ -79,13 +87,13 @@ const parseGeminiAnalysisForStrategy = (analysisText: string, strategyId: string
   if (prices.length >= 3) {
     prices.sort((a, b) => a - b);
     if (signal === 'buy') {
-      entryPrice = prices[Math.floor(prices.length * 0.3)];
-      stopLoss = prices[0];
-      takeProfit = prices[prices.length - 1];
-    } else {
-      entryPrice = prices[Math.floor(prices.length * 0.7)];
-      stopLoss = prices[prices.length - 1];
-      takeProfit = prices[0];
+      entryPrice = prices[Math.floor(prices.length * 0.3)]; // Lower entry for long
+      stopLoss = prices[0]; // Lowest price as stop
+      takeProfit = prices[prices.length - 1]; // Highest price as target
+    } else if (signal === 'sell') {
+      entryPrice = prices[Math.floor(prices.length * 0.7)]; // Higher entry for short
+      stopLoss = prices[prices.length - 1]; // Highest price as stop
+      takeProfit = prices[0]; // Lowest price as target
     }
   }
   
@@ -119,6 +127,7 @@ const parseGeminiAnalysisForStrategy = (analysisText: string, strategyId: string
 export const ImageChartAnalysis = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>(['ict']);
+  const [selectedTradingStyle, setSelectedTradingStyle] = useState<string>('day-trading');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -179,7 +188,11 @@ export const ImageChartAnalysis = () => {
             base64: imageBase64,
             mimeType: selectedFile.type
           },
-          prompt: `Analyze this chart using these strategies: ${selectedStrategies.map(s => strategies.find(st => st.id === s)?.name).join(', ')}`
+          prompt: `Analyze this chart using these strategies: ${selectedStrategies.map(s => strategies.find(st => st.id === s)?.name).join(', ')} 
+          
+Trading Style: ${tradingStyles.find(ts => ts.id === selectedTradingStyle)?.name} - ${tradingStyles.find(ts => ts.id === selectedTradingStyle)?.description}
+
+CRITICAL: For SELL signals, take profit must be LOWER than entry price. For BUY signals, take profit must be HIGHER than entry price.`
         }
       });
 
@@ -298,6 +311,26 @@ export const ImageChartAnalysis = () => {
               onChange={handleFileSelect}
               className="hidden"
             />
+          </div>
+
+          {/* Trading Style Selection */}
+          <div className="space-y-4">
+            <Label>Select Trading Style</Label>
+            <Select value={selectedTradingStyle} onValueChange={setSelectedTradingStyle}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {tradingStyles.map((style) => (
+                  <SelectItem key={style.id} value={style.id}>
+                    <div>
+                      <div className="font-medium">{style.name}</div>
+                      <div className="text-sm text-muted-foreground">{style.description}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Strategy Selection */}

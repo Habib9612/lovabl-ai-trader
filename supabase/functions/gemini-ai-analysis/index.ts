@@ -266,6 +266,8 @@ serve(async (req) => {
 - Take Profit 2: $[price] ([extended target])
 - Stop Loss: $[price] ([risk management reasoning])
 
+CRITICAL: For SELL/SHORT signals, take profit MUST be LOWER than entry price. For BUY/LONG signals, take profit MUST be HIGHER than entry price.
+
 **KEY LEVELS:**
 - Major Support: $[price]
 - Major Resistance: $[price]
@@ -285,7 +287,7 @@ serve(async (req) => {
 **CONFLUENCE FACTORS:**
 - [List 3-5 supporting factors for the trade]
 
-Provide specific numeric price levels and actionable trading recommendations.` }
+Provide specific numeric price levels and actionable trading recommendations based on the selected trading style.` }
                 ]
               }
             ],
