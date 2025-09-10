@@ -239,7 +239,7 @@ serve(async (req) => {
             'X-Title': 'Trading Analysis Platform'
           },
           body: JSON.stringify({
-            model: "anthropic/claude-3.5-sonnet",
+            model: "openai/gpt-4o",
             messages: [
               {
                 role: "user",
@@ -326,7 +326,7 @@ Provide specific numeric price levels and actionable trading recommendations bas
         'X-Title': 'Trading Analysis Platform'
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet",
+        model: "openai/gpt-4o",
         messages: [
           {
             role: "system",
