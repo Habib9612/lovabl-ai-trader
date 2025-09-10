@@ -61,8 +61,19 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        // Professional trading semantic colors
         profit: "hsl(var(--profit))",
         loss: "hsl(var(--loss))",
+        warning: "hsl(var(--warning))",
+        info: "hsl(var(--info))",
+        // Financial industry colors
+        navy: "hsl(215 25% 15%)",
+        "electric-blue": "hsl(213 93% 45%)",
+        "success-green": "hsl(142 76% 36%)",
+        "warning-amber": "hsl(38 92% 50%)",
+        "danger-red": "hsl(0 84% 60%)",
+        "neutral-gray": "hsl(215 14% 34%)",
+        "light-gray": "hsl(210 20% 98%)",
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
@@ -71,9 +82,10 @@ export default {
         "gradient-card": "var(--gradient-card)",
       },
       boxShadow: {
-        "primary": "var(--shadow-primary)",
         "card": "var(--shadow-card)",
         "glow": "var(--shadow-glow)",
+        "elegant": "var(--shadow-elegant)",
+        "deep": "var(--shadow-deep)",
       },
       transitionTimingFunction: {
         "smooth": "var(--transition-smooth)",
