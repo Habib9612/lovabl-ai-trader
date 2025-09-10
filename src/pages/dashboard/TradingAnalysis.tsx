@@ -130,7 +130,7 @@ const TradingAnalysis = () => {
           </TabsContent>
 
           <TabsContent value="live-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
-            <OandaTradingPanel />
+            <DemoTradingPanel />
           </TabsContent>
         </div>
       </Tabs>

@@ -161,6 +161,112 @@ export type Database = {
           },
         ]
       }
+      demo_accounts: {
+        Row: {
+          cash: number
+          created_at: string
+          id: string
+          initial_cash: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash?: number
+          created_at?: string
+          id?: string
+          initial_cash?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash?: number
+          created_at?: string
+          id?: string
+          initial_cash?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      demo_orders: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          price: number
+          quantity: number
+          side: string
+          status: string
+          symbol: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          price: number
+          quantity: number
+          side: string
+          status?: string
+          symbol: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          price?: number
+          quantity?: number
+          side?: string
+          status?: string
+          symbol?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "demo_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_positions: {
+        Row: {
+          account_id: string
+          avg_price: number
+          created_at: string
+          id: string
+          quantity: number
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          avg_price: number
+          created_at?: string
+          id?: string
+          quantity: number
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          avg_price?: number
+          created_at?: string
+          id?: string
+          quantity?: number
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_positions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "demo_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       edge_logs: {
         Row: {
           created_at: string | null
@@ -795,6 +901,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      "tradin ai": {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
       }
       trading_alerts: {
         Row: {
