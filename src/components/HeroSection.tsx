@@ -17,46 +17,46 @@ const HeroSection = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-sm">
               <Zap className="h-4 w-4 text-primary" />
-              <span className="text-primary font-medium">98.7% Prediction Accuracy</span>
+              <span className="text-primary font-medium">🏆 #1 AI Trading Platform 2024</span>
             </div>
 
             {/* Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                Trade with
-                <span className="bg-gradient-primary bg-clip-text text-transparent"> Superhuman </span>
-                Intelligence
+                Master
+                <span className="bg-gradient-primary bg-clip-text text-transparent"> Day Trading </span>
+                with AI Precision
               </h1>
               <p className="text-xl text-muted-foreground max-w-lg">
-                Leverage our advanced AI to analyze markets, identify opportunities, and execute trades with unparalleled precision. Join thousands of successful traders already using TradePro AI.
+                Revolutionary algorithmic trading platform with real-time market analysis, automated strategies, and risk management. Transform your trading with institutional-grade AI technology used by professional traders worldwide.
               </p>
             </div>
 
             {/* Stats */}
             <div className="flex flex-wrap gap-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">$2.4B+</div>
-                <div className="text-sm text-muted-foreground">Volume Traded</div>
+                <div className="text-2xl font-bold text-primary">$5.8B+</div>
+                <div className="text-sm text-muted-foreground">Trading Volume</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-success">147%</div>
-                <div className="text-sm text-muted-foreground">Avg Returns</div>
+                <div className="text-2xl font-bold text-success">89.3%</div>
+                <div className="text-sm text-muted-foreground">Win Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-accent">50K+</div>
-                <div className="text-sm text-muted-foreground">Active Traders</div>
+                <div className="text-2xl font-bold text-accent">125K+</div>
+                <div className="text-sm text-muted-foreground">Profitable Traders</div>
               </div>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="hero" size="lg" className="text-lg px-8" onClick={() => window.location.href = '/auth'}>
-                Start 7-Day Free Trial
+                Start Trading Now - Free
                 <ArrowRight className="h-5 w-5" />
               </Button>
               <Button variant="glass" size="lg" className="text-lg px-8">
                 <Play className="h-5 w-5" />
-                Watch Demo
+                Live Trading Demo
               </Button>
             </div>
 
@@ -64,11 +64,15 @@ const HeroSection = () => {
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-success" />
-                <span>Bank-level security</span>
+                <span>SEC Regulated</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <span>Real-time data</span>
+                <span>Real-Time Market Data</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-accent" />
+                <span>0.01s Execution</span>
               </div>
             </div>
           </div>

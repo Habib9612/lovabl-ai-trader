@@ -15,63 +15,63 @@ import {
 const features = [
   {
     icon: Brain,
-    title: "Advanced AI Engine",
-    description: "Our proprietary AI analyzes 10,000+ data points per second with 98.7% accuracy, far exceeding human capabilities.",
-    highlight: "98.7% Accuracy"
+    title: "Algorithmic Trading AI",
+    description: "Advanced machine learning algorithms analyze market patterns, technical indicators, and order flow to execute profitable trades automatically with 89.3% success rate.",
+    highlight: "89.3% Win Rate"
   },
   {
     icon: BarChart3,
-    title: "Multi-Asset Trading",
-    description: "Trade stocks, crypto, forex, commodities, and options all from one unified platform with real-time data.",
-    highlight: "5 Asset Classes"
+    title: "Multi-Asset Portfolio",
+    description: "Trade stocks, forex, cryptocurrency, commodities, ETFs, and options with unified portfolio management and cross-asset correlation analysis.",
+    highlight: "6 Asset Classes"
   },
   {
     icon: Target,
-    title: "Pattern Recognition",
-    description: "Identify complex market patterns and trends that human traders often miss, giving you a significant edge.",
-    highlight: "1000+ Patterns"
+    title: "Technical Analysis Suite",
+    description: "Professional-grade charting tools with 200+ technical indicators, Fibonacci retracements, Elliott Wave analysis, and custom screeners for pattern recognition.",
+    highlight: "200+ Indicators"
   },
   {
     icon: Users,
-    title: "Social Trading",
-    description: "Follow and copy trades from successful traders, or share your own strategies with the community.",
-    highlight: "Top Traders"
+    title: "Copy Trading Network",
+    description: "Mirror successful traders' strategies automatically. Follow verified profitable traders with transparent track records and risk metrics.",
+    highlight: "Verified Traders"
   },
   {
     icon: Shield,
-    title: "Risk Management",
-    description: "Advanced risk assessment tools with automated stop-losses and position sizing based on your risk tolerance.",
-    highlight: "Auto Protection"
+    title: "Advanced Risk Management",
+    description: "Institutional-grade risk controls with dynamic position sizing, correlation limits, VaR calculations, and automated stop-loss management.",
+    highlight: "Institutional Grade"
   },
   {
     icon: Zap,
-    title: "Lightning Execution",
-    description: "Execute trades in milliseconds with our high-frequency trading infrastructure and direct market access.",
-    highlight: "<1ms Latency"
+    title: "High-Frequency Execution",
+    description: "Ultra-low latency order execution with direct market access (DMA), smart order routing, and sub-millisecond trade execution.",
+    highlight: "0.01ms Latency"
   },
   {
     icon: TrendingUp,
-    title: "Predictive Analytics",
-    description: "Machine learning models predict market movements with unprecedented accuracy using sentiment analysis.",
-    highlight: "Future Insights"
+    title: "Market Sentiment Analysis",
+    description: "Real-time sentiment tracking from news, social media, and options flow. AI-powered market psychology indicators for timing entries and exits.",
+    highlight: "Real-Time Sentiment"
   },
   {
     icon: Globe,
-    title: "Global Markets",
-    description: "Access 100+ global exchanges and markets 24/7 with real-time data and instant execution capabilities.",
-    highlight: "24/7 Trading"
+    title: "Global Market Access",
+    description: "Trade on 150+ international exchanges across all time zones. Access pre-market, after-hours, and extended trading sessions worldwide.",
+    highlight: "150+ Exchanges"
   },
   {
     icon: Smartphone,
-    title: "Mobile Trading",
-    description: "Trade on-the-go with our native mobile apps featuring full functionality and offline capabilities.",
-    highlight: "iOS & Android"
+    title: "Professional Mobile App",
+    description: "Full-featured mobile trading platform with advanced order types, real-time charts, push notifications, and biometric security.",
+    highlight: "Pro Mobile"
   },
   {
     icon: BookOpen,
-    title: "AI-Powered Education",
-    description: "Personalized learning paths and real-time coaching from our AI to improve your trading skills.",
-    highlight: "Smart Learning"
+    title: "Trading Education Hub",
+    description: "Comprehensive trading courses, strategy backtesting, paper trading simulator, and personalized AI coaching to accelerate your learning curve.",
+    highlight: "AI Coaching"
   }
 ];
 
@@ -82,11 +82,11 @@ const FeaturesSection = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Features that set us 
-            <span className="bg-gradient-primary bg-clip-text text-transparent"> apart</span>
+            Professional Trading Tools for 
+            <span className="bg-gradient-primary bg-clip-text text-transparent"> Maximum Profits</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Experience the future of trading with our comprehensive suite of AI-powered tools and features designed to maximize your success.
+            Access institutional-grade trading technology with advanced analytics, algorithmic strategies, and risk management tools used by professional fund managers and hedge funds.
           </p>
         </div>
 
@@ -117,22 +117,26 @@ const FeaturesSection = () => {
         {/* Bottom CTA */}
         <div className="text-center mt-16">
           <div className="bg-card border border-border rounded-2xl p-8 max-w-4xl mx-auto shadow-card">
-            <h3 className="text-2xl font-bold mb-4">Ready to experience the future of trading?</h3>
+            <h3 className="text-2xl font-bold mb-4">Join the Elite Trading Community</h3>
             <p className="text-muted-foreground mb-6">
-              Join thousands of successful traders who have already discovered the power of AI-driven trading.
+              Over 125,000 profitable traders use our platform daily. Start your journey to financial freedom with proven strategies and professional tools.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">98.7%</div>
-                <div className="text-sm text-muted-foreground">Success Rate</div>
+                <div className="text-3xl font-bold text-primary">89.3%</div>
+                <div className="text-sm text-muted-foreground">Average Win Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-success">$2.4B+</div>
-                <div className="text-sm text-muted-foreground">Total Volume</div>
+                <div className="text-3xl font-bold text-success">$5.8B+</div>
+                <div className="text-sm text-muted-foreground">Monthly Volume</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent">50K+</div>
-                <div className="text-sm text-muted-foreground">Active Users</div>
+                <div className="text-3xl font-bold text-accent">125K+</div>
+                <div className="text-sm text-muted-foreground">Active Traders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">24/7</div>
+                <div className="text-sm text-muted-foreground">Market Access</div>
               </div>
             </div>
           </div>
