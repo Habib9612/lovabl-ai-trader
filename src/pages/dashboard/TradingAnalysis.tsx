@@ -9,7 +9,7 @@ import { FinvizScreener } from '@/components/trading/FinvizScreener';
 import { FinvizChart } from '@/components/trading/FinvizChart';
 import { ICTAnalysis } from '@/components/trading/ICTAnalysis';
 import { QuantResearchAgent } from '@/components/trading/QuantResearchAgent';
-import { OandaTradingPanel } from '@/components/trading/OandaTradingPanel';
+import { DemoTradingPanel } from '@/components/trading/DemoTradingPanel';
 
 const TradingAnalysis = () => {
   return (
