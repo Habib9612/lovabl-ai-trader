@@ -6,21 +6,262 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface QuantAnalysisRequest {
+interface QuantumMemoryEntry {
   query: string;
-  memory?: any;
+  response: string;
+  vector: number[];
+  timestamp: number;
 }
 
-interface QuantAnalysisResponse {
-  summary: string;
-  data_used: Record<string, any>;
-  analysis: string;
-  recommendation: string;
-  memory: {
-    tickers_tracked: string[];
-    last_metrics: Record<string, any>;
-    conclusions: string;
-  };
+interface QuantAnalysisRequest {
+  query: string;
+  memory?: QuantumMemoryEntry[];
+}
+
+class GeminiLLM {
+  private apiKey: string;
+  private endpoint: string;
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+    this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
+  }
+
+  async query(prompt: string): Promise<string> {
+    const headers = { "Content-Type": "application/json" };
+    const payload = {
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.7
+      }
+    };
+
+    const url = `${this.endpoint}?key=${this.apiKey}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.candidates && data.candidates.length > 0) {
+          return data.candidates[0].content.parts[0].text;
+        } else {
+          return "No response generated";
+        }
+      } else {
+        return `LLM Error ${response.status}: ${await response.text()}`;
+      }
+    } catch (error) {
+      return `Request failed: ${error.message}`;
+    }
+  }
+}
+
+class QuantumMemory {
+  private vectorDim: number = 384;
+  private memories: QuantumMemoryEntry[] = [];
+
+  constructor(existingMemories: QuantumMemoryEntry[] = []) {
+    this.memories = existingMemories;
+  }
+
+  private embed(text: string): number[] {
+    // Hash-based embedding (simplified for edge function)
+    const hash = this.hashString(text);
+    const vector = new Array(this.vectorDim);
+    
+    // Generate deterministic vector from hash
+    let seed = hash;
+    for (let i = 0; i < this.vectorDim; i++) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      vector[i] = (seed / 0x7fffffff) * 2 - 1; // Normalize to [-1, 1]
+    }
+
+    // Add text-based features
+    const textLower = text.toLowerCase();
+    vector[0] = Math.min(text.length / 1000.0, 1.0);
+    vector[1] = Math.min(text.split(' ').length / 100.0, 1.0);
+    
+    return vector;
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    const dotProduct = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
+    const magnitudeA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
+    const magnitudeB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+  }
+
+  store(query: string, response: string): boolean {
+    if (!query.trim() || !response.trim()) return false;
+
+    const vector = this.embed(query);
+    const entry: QuantumMemoryEntry = {
+      query,
+      response,
+      vector,
+      timestamp: Date.now()
+    };
+
+    this.memories.push(entry);
+    return true;
+  }
+
+  retrieve(query: string, threshold: number = 0.75): QuantumMemoryEntry | null {
+    if (this.memories.length === 0) return null;
+
+    const queryVector = this.embed(query);
+    let bestMatch: QuantumMemoryEntry | null = null;
+    let bestSimilarity = 0;
+
+    for (const memory of this.memories) {
+      const similarity = this.cosineSimilarity(queryVector, memory.vector);
+      if (similarity > bestSimilarity && similarity > threshold) {
+        bestSimilarity = similarity;
+        bestMatch = memory;
+      }
+    }
+
+    return bestMatch;
+  }
+
+  getMemories(): QuantumMemoryEntry[] {
+    return this.memories;
+  }
+
+  getStats() {
+    return {
+      totalMemories: this.memories.length,
+      vectorDimension: this.vectorDim
+    };
+  }
+}
+
+class QuantumAgent {
+  private memory: QuantumMemory;
+  private llm: GeminiLLM;
+  private memoryThreshold: number;
+
+  constructor(apiKey: string, existingMemories: QuantumMemoryEntry[] = [], memoryThreshold: number = 0.75) {
+    this.memory = new QuantumMemory(existingMemories);
+    this.llm = new GeminiLLM(apiKey);
+    this.memoryThreshold = memoryThreshold;
+  }
+
+  async handleRequest(userInput: string): Promise<any> {
+    if (!userInput.trim()) {
+      return { error: "Please provide a valid input." };
+    }
+
+    // Check quantum memory first
+    const memResult = this.memory.retrieve(userInput, this.memoryThreshold);
+    if (memResult) {
+      const similarity = this.memory.retrieve(userInput, 0)?.vector ? 
+        this.calculateSimilarity(userInput, memResult.query) : 0;
+      
+      return {
+        source: "quantum_memory",
+        similarity: similarity.toFixed(2),
+        originalQuery: memResult.query,
+        response: memResult.response,
+        timestamp: memResult.timestamp
+      };
+    }
+
+    // Enhanced financial analysis prompt
+    const financialPrompt = `You are a Quantum Research Agent, a professional financial AI analyst.
+
+CORE IDENTITY:
+- Professional, data-driven financial analyst
+- Never hallucinate numbers - only use provided data
+- Provide actionable insights with clear reasoning
+- Focus on risk assessment and opportunity identification
+
+ANALYSIS FRAMEWORK:
+1. Extract and analyze key financial metrics
+2. Identify market trends and patterns  
+3. Assess risks and opportunities
+4. Provide clear, actionable recommendations
+
+User Query: ${userInput}
+
+Please provide a comprehensive financial analysis in the following JSON format:
+{
+  "summary": "Executive summary of key findings",
+  "analysis": "Detailed analysis with specific insights",
+  "recommendation": "Actionable investment guidance",
+  "risk_factors": "Key risks to consider",
+  "confidence_level": "High/Medium/Low based on data quality"
+}`;
+
+    // Query Gemini LLM
+    console.log("Querying Gemini LLM for financial analysis...");
+    const llmResponse = await this.llm.query(financialPrompt);
+
+    // Store in memory if valid response
+    if (!llmResponse.startsWith("LLM Error") && !llmResponse.startsWith("Request failed")) {
+      const stored = this.memory.store(userInput, llmResponse);
+      
+      // Try to parse JSON response
+      try {
+        const jsonMatch = llmResponse.match(/\{[\s\S]*\}/);
+        const jsonResponse = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+        
+        return {
+          source: "quantum_llm",
+          stored: stored,
+          response: jsonResponse || llmResponse,
+          raw_response: llmResponse
+        };
+      } catch (parseError) {
+        return {
+          source: "quantum_llm",
+          stored: stored,
+          response: llmResponse,
+          parse_error: "Could not parse JSON response"
+        };
+      }
+    } else {
+      return {
+        source: "quantum_llm",
+        error: llmResponse
+      };
+    }
+  }
+
+  private calculateSimilarity(query1: string, query2: string): number {
+    const vec1 = this.memory['embed'](query1);
+    const vec2 = this.memory['embed'](query2);
+    return this.memory['cosineSimilarity'](vec1, vec2);
+  }
+
+  getStats() {
+    return {
+      ...this.memory.getStats(),
+      memoryThreshold: this.memoryThreshold
+    };
+  }
+
+  getMemories(): QuantumMemoryEntry[] {
+    return this.memory.getMemories();
+  }
 }
 
 serve(async (req) => {
@@ -29,158 +270,38 @@ serve(async (req) => {
   }
 
   try {
-    const { query, memory = {} }: QuantAnalysisRequest = await req.json();
+    const { query, memory = [] }: QuantAnalysisRequest = await req.json();
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
     if (!geminiApiKey) {
       throw new Error('GEMINI_API_KEY not configured');
     }
 
-    console.log('Processing quant research query:', query);
+    console.log('Processing quantum research query:', query);
 
-    // Simulate OpenBB data retrieval (in production, this would integrate with actual OpenBB)
-    const mockOpenBBData = await getMockFinancialData(query);
+    // Initialize quantum agent with existing memory
+    const agent = new QuantumAgent(geminiApiKey, memory, 0.75);
 
-    const prompt = `You are **Quant Research Agent**, a financial AI integrated with OpenBB data and running on Gemini.
+    // Handle the request
+    const result = await agent.handleRequest(query);
 
-CORE IDENTITY:
-- You are a professional, data-driven financial analyst.
-- You never hallucinate numbers — you only use data retrieved via OpenBB Agent or explicitly provided.
-- You maintain context across turns. Each response must carry forward a "memory" section with tickers, metrics, and insights so you can continue reasoning in future queries.
-
-WORKFLOW:
-1. Receive user query + any prior memory.
-2. Retrieve financial data via OpenBB Agent.
-3. Parse and analyze step by step:
-   - Extract key metrics (PE ratio, EPS, growth, revenue, margins, risk indicators).
-   - Compare against peers if requested.
-   - Highlight risks, opportunities, and valuation concerns.
-   - If user references "previous tickers" or "add X," recall memory and update it.
-4. Always output valid JSON with **four sections**:
-
-{
-  "summary": "Plain-English executive summary of findings",
-  "data_used": { "TICKER": { "metric": value, ... } },
-  "analysis": "Deeper interpretation of trends, risks, opportunities",
-  "recommendation": "Actionable insights, e.g., hold, research further, risks to note",
-  "memory": {
-    "tickers_tracked": ["AAPL", "TSLA", "AMZN"], 
-    "last_metrics": { "TICKER": { "metric": value } },
-    "conclusions": "Concise notes to recall next turn"
-  }
-}
-
-FORMATTING RULES:
-- Always produce JSON in the schema above.
-- Do not add prose outside the JSON.
-- If data is missing, explicitly note "Data unavailable for X" inside \`analysis\`.
-- Keep summaries concise but professional.
-- Update the memory field every turn (add new tickers, preserve old ones, update metrics).
-
-Prior memory:
-${JSON.stringify(memory)}
-
-User query: ${query}
-OpenBB data:
-${JSON.stringify(mockOpenBBData)}
-
-Analyze the data and provide insights in the exact JSON format specified above.`;
-
-    console.log('Calling Gemini API with prompt length:', prompt.length);
-    
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          maxOutputTokens: 2048,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const generatedText = data.candidates[0].content.parts[0].text;
-    
-    console.log('Gemini response:', generatedText);
-
-    // Parse JSON response
-    let result: QuantAnalysisResponse;
-    try {
-      // Extract JSON from response (remove any markdown formatting)
-      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-      const jsonText = jsonMatch ? jsonMatch[0] : generatedText;
-      result = JSON.parse(jsonText);
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      result = {
-        summary: generatedText.trim(),
-        data_used: mockOpenBBData,
-        analysis: "Could not parse JSON perfectly from Gemini response.",
-        recommendation: "Verify analysis manually.",
-        memory: memory || {
-          tickers_tracked: [],
-          last_metrics: {},
-          conclusions: ""
-        }
-      };
-    }
-
-    return new Response(JSON.stringify(result), {
+    // Return response with updated memory
+    return new Response(JSON.stringify({
+      ...result,
+      memory: agent.getMemories(),
+      stats: agent.getStats()
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in quant-research-agent function:', error);
+    console.error('Error in quantum-research-agent function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      summary: "Analysis failed",
-      data_used: {},
-      analysis: "Error occurred during analysis",
-      recommendation: "Please try again",
-      memory: { tickers_tracked: [], last_metrics: {}, conclusions: "" }
+      source: "system_error"
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
-async function getMockFinancialData(query: string): Promise<Record<string, any>> {
-  // Extract tickers from query
-  const tickerPattern = /\b[A-Z]{1,5}\b/g;
-  const tickers = query.match(tickerPattern) || [];
-  
-  const data: Record<string, any> = {};
-  
-  for (const ticker of tickers) {
-    // Mock financial data - in production, integrate with real OpenBB API
-    data[ticker] = {
-      price: Math.random() * 200 + 50,
-      pe_ratio: Math.random() * 30 + 10,
-      eps: Math.random() * 10 + 1,
-      revenue_growth: (Math.random() - 0.5) * 0.4,
-      profit_margin: Math.random() * 0.3 + 0.05,
-      debt_to_equity: Math.random() * 2,
-      current_ratio: Math.random() * 3 + 0.5,
-      market_cap: Math.random() * 1000000000000 + 10000000000,
-      volume: Math.random() * 100000000 + 1000000,
-      beta: Math.random() * 2 + 0.5,
-      dividend_yield: Math.random() * 0.05,
-      analyst_rating: ['Buy', 'Hold', 'Sell'][Math.floor(Math.random() * 3)],
-      price_target: Math.random() * 300 + 100
-    };
-  }
-  
-  return data;
-}
