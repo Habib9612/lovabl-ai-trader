@@ -44,7 +44,7 @@ class OpenRouterLLM {
         }
       ],
       temperature: 0.2,
-      max_tokens: 2048
+      max_tokens: 250
     };
 
     try {
