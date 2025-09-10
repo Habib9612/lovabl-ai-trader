@@ -229,7 +229,7 @@ serve(async (req) => {
 
         Format as detailed, structured analysis with specific price levels, percentages, and actionable trading recommendations. Include confidence ratings (1-100) for each signal and setup.`;
         
-        // For image analysis, we need to use the OpenRouter Vision API
+        // For image analysis, we need to use a vision-capable model
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -239,7 +239,7 @@ serve(async (req) => {
             'X-Title': 'Trading Analysis Platform'
           },
           body: JSON.stringify({
-            model: "meta-llama/llama-3.3-70b-instruct",
+            model: "anthropic/claude-3.5-sonnet",
             messages: [
               {
                 role: "user",
@@ -251,12 +251,46 @@ serve(async (req) => {
                       url: `data:${data.mimeType || 'image/jpeg'};base64,${data.base64.split(',')[1]}`
                     }
                   },
-                  { type: "text", text: prompt || 'Analyze this trading chart using the strategies mentioned. Provide specific entry/exit levels and trading recommendations.' }
+                  { type: "text", text: prompt || `Analyze this trading chart using the strategies mentioned. 
+
+**REQUIRED OUTPUT FORMAT:**
+
+**MARKET BIAS:** [Bullish/Bearish/Neutral] with [confidence %]
+
+**ENTRY SIGNALS:**
+- Primary Entry: $[price] ([reason])
+- Alternative Entry: $[price] ([reason])
+
+**EXIT STRATEGY:**
+- Take Profit 1: $[price] ([target reasoning])
+- Take Profit 2: $[price] ([extended target])
+- Stop Loss: $[price] ([risk management reasoning])
+
+**KEY LEVELS:**
+- Major Support: $[price]
+- Major Resistance: $[price]
+- Critical Break: $[price]
+
+**ICT ANALYSIS:**
+- Order Blocks: [locations and strength]
+- Fair Value Gaps: [identify and probability of fill]
+- Liquidity Zones: [BSL/SSL levels]
+- Market Structure: [BOS/CHOCH analysis]
+
+**RISK MANAGEMENT:**
+- Risk-to-Reward Ratio: [calculate based on entry/exit]
+- Position Size Recommendation: [%]
+- Timeframe: [recommended timeframe]
+
+**CONFLUENCE FACTORS:**
+- [List 3-5 supporting factors for the trade]
+
+Provide specific numeric price levels and actionable trading recommendations.` }
                 ]
               }
             ],
             temperature: 0.3,
-            max_tokens: 250
+            max_tokens: 2000
           }),
         });
 
@@ -290,7 +324,7 @@ serve(async (req) => {
         'X-Title': 'Trading Analysis Platform'
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.3-70b-instruct",
+        model: "anthropic/claude-3.5-sonnet",
         messages: [
           {
             role: "system",
@@ -301,8 +335,8 @@ serve(async (req) => {
             content: userContent
           }
         ],
-        temperature: 0.7,
-        max_tokens: 250
+        temperature: 0.3,
+        max_tokens: 2000
       }),
     });
 
