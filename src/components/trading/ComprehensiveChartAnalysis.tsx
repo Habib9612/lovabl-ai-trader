@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Upload, TrendingUp, DollarSign, AlertTriangle, Target } from 'lucide-react';
 import { useChartAnalysis } from '@/hooks/useChartAnalysis';
-import { useFinvizData } from '@/hooks/useFinvizData';
+import { useFinancialData } from '@/hooks/useFinancialData';
 import { toast } from 'sonner';
 
 interface AnalysisResult {
@@ -31,7 +31,7 @@ export const ComprehensiveChartAnalysis = () => {
   const [loading, setLoading] = useState(false);
 
   const { analyzeChart } = useChartAnalysis();
-  const { fetchStockData, stockData, isLoading: finvizLoading } = useFinvizData();
+  const { fetchStockData, stockData, isLoading: financialLoading } = useFinancialData();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,14 +49,14 @@ export const ComprehensiveChartAnalysis = () => {
 
     setLoading(true);
     try {
-      // Try to fetch Finviz fundamentals (continue even if this fails)
+      // Try to fetch real-time financial fundamentals (continue even if this fails)
       let fundamentalsData = null;
       try {
-        await fetchStockData(symbol.toUpperCase());
-        fundamentalsData = stockData;
-      } catch (finvizError) {
-        console.warn('Finviz data not available for', symbol, '- proceeding with chart analysis only');
-        toast.info(`Fundamental data not available for ${symbol.toUpperCase()}, proceeding with chart analysis`);
+        fundamentalsData = await fetchStockData(symbol.toUpperCase());
+        toast.success(`Real-time data loaded for ${symbol.toUpperCase()}`);
+      } catch (financialError) {
+        console.warn('Financial data not available for', symbol, '- proceeding with chart analysis only');
+        toast.info(`Real-time data not available for ${symbol.toUpperCase()}, proceeding with chart analysis`);
       }
       
       // Convert file to base64 for analysis
@@ -226,26 +226,44 @@ export const ComprehensiveChartAnalysis = () => {
               </Card>
             </div>
 
-            {/* Fundamentals */}
+            {/* Real-time Fundamentals */}
             {stockData && (
               <Card className="p-4">
-                <h4 className="font-semibold mb-3">Fundamentals Overview</h4>
+                <h4 className="font-semibold mb-3">Real-time Fundamentals Overview</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
+                    <span className="text-gray-600">Price:</span>
+                    <p className="font-semibold">${stockData.price}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Change:</span>
+                    <p className={`font-semibold ${parseFloat(stockData.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {stockData.change} ({stockData.changesPercentage})
+                    </p>
+                  </div>
+                  <div>
                     <span className="text-gray-600">Market Cap:</span>
-                    <p className="font-semibold">{stockData.marketCap || 'N/A'}</p>
+                    <p className="font-semibold">{stockData.marketCap}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">P/E Ratio:</span>
-                    <p className="font-semibold">{stockData.pe || 'N/A'}</p>
+                    <p className="font-semibold">{stockData.pe}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">EPS:</span>
-                    <p className="font-semibold">{stockData.eps || 'N/A'}</p>
+                    <p className="font-semibold">{stockData.eps}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">Volume:</span>
-                    <p className="font-semibold">{stockData.volume || 'N/A'}</p>
+                    <p className="font-semibold">{stockData.volume}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">52W High:</span>
+                    <p className="font-semibold">${stockData.yearHigh}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">52W Low:</span>
+                    <p className="font-semibold">${stockData.yearLow}</p>
                   </div>
                 </div>
               </Card>
