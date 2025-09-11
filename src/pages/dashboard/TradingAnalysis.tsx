@@ -9,7 +9,7 @@ import { TradingJournal } from '@/components/trading/TradingJournal';
 import { FinvizScreener } from '@/components/trading/FinvizScreener';
 import { FinvizChart } from '@/components/trading/FinvizChart';
 import { ICTAnalysis } from '@/components/trading/ICTAnalysis';
-import { QuantResearchAgent } from '@/components/trading/QuantResearchAgent';
+import { AlgoTrading } from '@/components/trading/AlgoTrading';
 import { DemoTradingPanel } from '@/components/trading/DemoTradingPanel';
 import { ComprehensiveChartAnalysis } from '@/components/trading/ComprehensiveChartAnalysis';
 
@@ -90,10 +90,10 @@ const TradingAnalysis = () => {
               ICT Strategy
             </TabsTrigger>
             <TabsTrigger 
-              value="quant-research" 
+              value="algo-trading" 
               className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
             >
-              Quant Research
+              Algo Trading
             </TabsTrigger>
           </TabsList>
         </div>
@@ -131,8 +131,8 @@ const TradingAnalysis = () => {
             <ICTAnalysis />
           </TabsContent>
 
-          <TabsContent value="quant-research" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
-            <QuantResearchAgent />
+          <TabsContent value="algo-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
+            <AlgoTrading />
           </TabsContent>
         </div>
       </Tabs>
