@@ -149,7 +149,7 @@ export const ComprehensiveChartAnalysis = () => {
               <input
                 type="file"
                 id="chart"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/jpg,image/gif"
                 onChange={handleFileUpload}
                 className="hidden"
               />

@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EnhancedTradingChart } from '@/components/charts/EnhancedTradingChart';
 import { CompanyFundamentals } from '@/components/trading/CompanyFundamentals';
-import { ImageChartAnalysis } from '@/components/trading/ImageChartAnalysis';
+
 import { AITraining } from '@/components/trading/AITraining';
 import { TradingJournal } from '@/components/trading/TradingJournal';
 import { FinvizScreener } from '@/components/trading/FinvizScreener';
@@ -111,10 +111,7 @@ const TradingAnalysis = () => {
           </TabsContent>
 
           <TabsContent value="image-analysis" className="p-8 m-0">
-            <div className="space-y-8">
-              <ComprehensiveChartAnalysis />
-              <ImageChartAnalysis />
-            </div>
+            <ComprehensiveChartAnalysis />
           </TabsContent>
 
           <TabsContent value="ai-training" className="p-8 m-0">
