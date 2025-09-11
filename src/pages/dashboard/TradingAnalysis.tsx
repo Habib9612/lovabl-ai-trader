@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EnhancedTradingChart } from '@/components/charts/EnhancedTradingChart';
 import { CompanyFundamentals } from '@/components/trading/CompanyFundamentals';
 
+import { StockAIAnalysis } from '@/components/trading/StockAIAnalysis';
 import { AITraining } from '@/components/trading/AITraining';
 import { TradingJournal } from '@/components/trading/TradingJournal';
 import { FinvizScreener } from '@/components/trading/FinvizScreener';
@@ -37,9 +38,15 @@ const TradingAnalysis = () => {
       </div>
 
       {/* Beautiful Tab Navigation */}
-      <Tabs defaultValue="finviz-chart" className="w-full">
+      <Tabs defaultValue="ai-analysis" className="w-full">
         <div className="flex justify-center mb-8">
           <TabsList className="grid grid-cols-9 w-full max-w-6xl h-14 bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+            <TabsTrigger 
+              value="ai-analysis" 
+              className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
+            >
+              AI Analysis
+            </TabsTrigger>
             <TabsTrigger 
               value="finviz-chart" 
               className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
@@ -62,7 +69,7 @@ const TradingAnalysis = () => {
               value="image-analysis" 
               className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
             >
-              AI Analysis
+              Chart Analysis
             </TabsTrigger>
             <TabsTrigger 
               value="ai-training" 
@@ -88,16 +95,14 @@ const TradingAnalysis = () => {
             >
               Quant Research
             </TabsTrigger>
-            <TabsTrigger 
-              value="demo-trading" 
-              className="rounded-xl font-medium data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all hover-scale"
-            >
-              Demo Trading
-            </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="bg-white/90 backdrop-blur rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
+          <TabsContent value="ai-analysis" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
+            <StockAIAnalysis />
+          </TabsContent>
+
           <TabsContent value="finviz-chart" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
             <FinvizChart />
           </TabsContent>
@@ -128,10 +133,6 @@ const TradingAnalysis = () => {
 
           <TabsContent value="quant-research" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
             <QuantResearchAgent />
-          </TabsContent>
-
-          <TabsContent value="demo-trading" className="p-8 m-0 bg-gradient-to-br from-white to-slate-50">
-            <DemoTradingPanel />
           </TabsContent>
         </div>
       </Tabs>
