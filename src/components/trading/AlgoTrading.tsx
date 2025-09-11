@@ -50,7 +50,7 @@ interface TradingSession {
 }
 
 export const AlgoTrading: React.FC = () => {
-  const [symbol, setSymbol] = useState('TLT');
+  const [symbol, setSymbol] = useState('AAPL');
   const [strategy, setStrategy] = useState('monthly-momentum');
   const [timeframe, setTimeframe] = useState('1D');
   const [isLoading, setIsLoading] = useState(false);
@@ -70,7 +70,11 @@ export const AlgoTrading: React.FC = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Backtest error response:', error, 'server data:', data);
+        const serverMessage = (data as any)?.error;
+        throw new Error(serverMessage || (error as any)?.message || 'Failed to run algorithmic trading backtest');
+      }
 
       const analysis: AlgoAnalysis = data;
       
@@ -91,9 +95,10 @@ export const AlgoTrading: React.FC = () => {
 
     } catch (error) {
       console.error('Error in algo trading backtest:', error);
+      const message = error instanceof Error ? error.message : 'Failed to run algorithmic trading backtest. Please try again.';
       toast({
         title: "Backtest Failed",
-        description: "Failed to run algorithmic trading backtest. Please try again.",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -278,7 +283,7 @@ export const AlgoTrading: React.FC = () => {
               <div>
                 <label className="text-sm font-medium mb-2 block">Symbol</label>
                 <Input
-                  placeholder="TLT"
+                  placeholder="AAPL"
                   value={symbol}
                   onChange={(e) => setSymbol(e.target.value.toUpperCase())}
                 />

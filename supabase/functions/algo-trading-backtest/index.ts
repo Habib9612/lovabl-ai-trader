@@ -164,15 +164,19 @@ class TLTMonthlyMomentumStrategy {
   }
 }
 
-async function fetchStockData(symbol: string): Promise<{prices: number[], dates: string[]} | null> {
+async function fetchStockData(symbol: string): Promise<{prices: number[], dates: string[]}> {
   const finnhubApiKey = Deno.env.get('FINNHUB_API_KEY');
 
   if (!finnhubApiKey) {
-    console.error('Finnhub API key not configured. Please set FINNHUB_API_KEY in Supabase Edge Function secrets.');
-    return null;
+    throw new Error('Finnhub API key not configured. Please set FINNHUB_API_KEY in Supabase Edge Function secrets.');
   }
 
   const cleanSymbol = symbol.trim().toUpperCase();
+
+  // Basic symbol validation (US-style tickers)
+  if (!/^[A-Z.\-]{1,10}$/.test(cleanSymbol)) {
+    throw new Error('Invalid symbol format. Use letters only, e.g., AAPL or MSFT.');
+  }
 
   try {
     // Get 2 years of data
@@ -186,7 +190,7 @@ async function fetchStockData(symbol: string): Promise<{prices: number[], dates:
     if (!response.ok) {
       const text = await response.text();
       console.error(`Finnhub HTTP error ${response.status}: ${text}`);
-      return null;
+      throw new Error(`Finnhub error ${response.status}: ${text}. Hint: Try a US stock like AAPL or MSFT. ETF candles (e.g., TLT) may require a paid plan or additional permissions.`);
     }
 
     const data = await response.json();
@@ -202,19 +206,22 @@ async function fetchStockData(symbol: string): Promise<{prices: number[], dates:
     // Common error shapes from Finnhub
     if (data && typeof data.error === 'string') {
       console.error('Finnhub API error:', data.error);
-      return null;
+      throw new Error(`Finnhub API error: ${data.error}`);
     }
 
-    if (data && typeof data.s === 'string' && data.s !== 'ok') {
+    if (data && typeof data.s === 'string') {
+      if (data.s === 'no_data') {
+        throw new Error('No data available for this symbol and time range. Try another symbol like AAPL.');
+      }
       console.error('Finnhub API status not ok:', data.s);
-      return null;
+      throw new Error(`Finnhub API status not ok: ${data.s}`);
     }
 
     console.error('Unexpected Finnhub response shape:', data);
-    return null;
+    throw new Error('Unexpected response from data provider.');
   } catch (error) {
     console.error('Error fetching stock data:', error);
-    return null;
+    throw error instanceof Error ? error : new Error('Unknown error while fetching stock data');
   }
 }
 
@@ -274,11 +281,8 @@ serve(async (req) => {
 
     console.log(`Running backtest for ${symbol} with ${strategy} strategy`);
 
-    // Fetch stock data
+    // Fetch stock data (throws on failure with detailed message)
     const stockData = await fetchStockData(symbol);
-    if (!stockData) {
-      throw new Error('Failed to fetch stock data');
-    }
 
     // Run backtest based on strategy
     let backtest: BacktestResult;
