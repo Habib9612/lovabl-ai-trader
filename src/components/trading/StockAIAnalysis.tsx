@@ -4,38 +4,79 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, AlertTriangle, Target } from 'lucide-react';
-import { useFinancialData } from '@/hooks/useFinancialData';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, TrendingUp, AlertTriangle, Target, BarChart3, Brain, DollarSign, Activity, Globe, Shield, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-interface AnalysisResult {
-  analysis: string;
-  recommendation: string;
-  confidence: number;
-  riskLevel: string;
-  targetPrice?: number;
-  stopLoss?: number;
-  timeframe: string;
-  strategy: string;
+interface ComprehensiveAnalysis {
+  coreData: {
+    marketCap: string;
+    pe: number | null;
+    dividendYield: number | null;
+    volume: string;
+    relativeVolume: number;
+    yearHighLow: string;
+    positionInRange: number;
+  };
+  technicals: {
+    trend: {
+      shortTerm: string;
+      mediumTerm: string;
+      longTerm: string;
+    };
+    indicators: {
+      rsi: number;
+      rsiSignal: string;
+      momentum: number;
+      volatility: number;
+    };
+    movingAverages: {
+      ma20: number;
+      ma50: number;
+      ma200: number;
+    };
+  };
+  sentiment: {
+    score: number;
+    newsCount: number;
+    analystRatings: {
+      buy: number;
+      hold: number;
+      sell: number;
+    };
+  };
+  forecast: {
+    aiProbability: number;
+    expectedVolatility: string;
+    riskScore: number;
+    targetPrice: number;
+    stopLoss: number;
+  };
+  insights: {
+    summary: string;
+    keySignals: string[];
+    recommendation: string;
+    confidence: number;
+  };
+  rawData?: any;
 }
 
 export const StockAIAnalysis = () => {
-  const [symbol, setSymbol] = useState('');
-  const [timeframe, setTimeframe] = useState('');
-  const [strategy, setStrategy] = useState('');
+  const [symbol, setSymbol] = useState('AAPL');
+  const [timeframe, setTimeframe] = useState('medium-term');
+  const [strategy, setStrategy] = useState('growth-investing');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<ComprehensiveAnalysis | null>(null);
   
-  const { stockData, fetchStockData, isLoading: isLoadingData } = useFinancialData();
   const { user } = useAuth();
 
   const handleAnalysis = async () => {
-    if (!symbol || !timeframe || !strategy) {
-      toast.error('Please fill in all fields');
+    if (!symbol.trim()) {
+      toast.error('Please enter a stock symbol');
       return;
     }
 
@@ -47,57 +88,12 @@ export const StockAIAnalysis = () => {
     setIsAnalyzing(true);
     
     try {
-      // First, fetch the stock data
-      const stockInfo = await fetchStockData(symbol);
-      
-      if (!stockInfo) {
-        throw new Error('Failed to fetch stock data');
-      }
-
-      // Prepare the analysis prompt
-      const analysisPrompt = `
-Perform a comprehensive trading analysis for ${symbol} using the following parameters:
-
-**Stock Information:**
-- Symbol: ${stockInfo.symbol}
-- Company: ${stockInfo.companyName}
-- Current Price: ${stockInfo.price}
-- Price Change: ${stockInfo.change} (${stockInfo.changesPercentage})
-- Volume: ${stockInfo.volume}
-- Market Cap: ${stockInfo.marketCap}
-- P/E Ratio: ${stockInfo.pe}
-- Sector: ${stockInfo.sector}
-
-**Analysis Parameters:**
-- Timeframe: ${timeframe}
-- Strategy: ${strategy}
-
-**Analysis Requirements:**
-1. Technical Analysis based on current price action and market data
-2. Fundamental Analysis using P/E, market cap, and sector information
-3. Strategy-specific recommendations for ${strategy}
-4. Risk assessment for ${timeframe} timeframe
-5. Entry/exit points with stop loss recommendations
-6. Confidence level (1-100)
-
-Please provide a detailed analysis including:
-- Market sentiment and trend direction
-- Key support and resistance levels
-- Risk management recommendations
-- Target price projections
-- Overall recommendation (BUY/SELL/HOLD)
-
-Format the response as actionable trading insights.
-      `;
-
-      // Call the AI analysis function
+      // Call the enhanced AI analysis function
       const { data, error } = await supabase.functions.invoke('stock-ai-analysis', {
         body: {
-          prompt: analysisPrompt,
-          symbol: symbol,
+          symbol: symbol.toUpperCase().trim(),
           timeframe: timeframe,
-          strategy: strategy,
-          stockData: stockInfo
+          strategy: strategy
         }
       });
 
@@ -105,8 +101,12 @@ Format the response as actionable trading insights.
         throw new Error(error.message);
       }
 
+      if (!data.success) {
+        throw new Error(data.error || 'Analysis failed');
+      }
+
       setAnalysisResult(data.analysis);
-      toast.success('Analysis completed successfully!');
+      toast.success('Comprehensive analysis completed!');
       
     } catch (error) {
       console.error('Analysis error:', error);
@@ -116,16 +116,47 @@ Format the response as actionable trading insights.
     }
   };
 
+  const formatNumber = (num: number | null) => {
+    if (num === null || num === undefined) return 'N/A';
+    return num.toLocaleString();
+  };
+
+  const formatPrice = (price: number) => {
+    return `$${price.toFixed(2)}`;
+  };
+
+  const getTrendColor = (trend: string) => {
+    return trend === 'Bullish' ? 'text-green-600' : 'text-red-600';
+  };
+
+  const getRSIColor = (rsi: number) => {
+    if (rsi > 70) return 'text-red-600';
+    if (rsi < 30) return 'text-green-600';
+    return 'text-blue-600';
+  };
+
+  const getRecommendationColor = (rec: string) => {
+    switch (rec) {
+      case 'BUY': return 'bg-green-500';
+      case 'SELL': return 'bg-red-500';
+      case 'HOLD': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            AI Stock Analysis
+            <Brain className="h-5 w-5 text-primary" />
+            Edge AI Analysis
+            <Badge variant="secondary" className="ml-auto">
+              Professional Grade
+            </Badge>
           </CardTitle>
           <CardDescription>
-            Get comprehensive AI-powered analysis for any stock with real-time data
+            Comprehensive AI-powered market analysis with real-time data, technical indicators, and sentiment analysis
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -134,18 +165,18 @@ Format the response as actionable trading insights.
               <Label htmlFor="symbol">Stock Symbol</Label>
               <Input
                 id="symbol"
-                placeholder="e.g., AAPL, TSLA, MSFT"
+                placeholder="AAPL, TSLA, MSFT..."
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                className="uppercase"
+                className="uppercase font-mono"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="timeframe">Timeframe</Label>
+              <Label htmlFor="timeframe">Analysis Timeframe</Label>
               <Select value={timeframe} onValueChange={setTimeframe}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select timeframe" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="intraday">Intraday (1-4 hours)</SelectItem>
@@ -160,12 +191,11 @@ Format the response as actionable trading insights.
               <Label htmlFor="strategy">Trading Strategy</Label>
               <Select value={strategy} onValueChange={setStrategy}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select strategy" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="day-trading">Day Trading</SelectItem>
                   <SelectItem value="swing-trading">Swing Trading</SelectItem>
-                  <SelectItem value="position-trading">Position Trading</SelectItem>
                   <SelectItem value="momentum">Momentum Trading</SelectItem>
                   <SelectItem value="value-investing">Value Investing</SelectItem>
                   <SelectItem value="growth-investing">Growth Investing</SelectItem>
@@ -177,115 +207,290 @@ Format the response as actionable trading insights.
 
           <Button 
             onClick={handleAnalysis}
-            disabled={isAnalyzing || isLoadingData || !symbol || !timeframe || !strategy}
+            disabled={isAnalyzing || !symbol.trim()}
             className="w-full"
+            size="lg"
           >
             {isAnalyzing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
+                Running Edge Analysis...
               </>
             ) : (
-              'Analyze Stock'
+              <>
+                <Zap className="mr-2 h-4 w-4" />
+                Analyze Stock
+              </>
             )}
           </Button>
         </CardContent>
       </Card>
 
-      {stockData && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Stock Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Company</p>
-                <p className="font-medium">{stockData.companyName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Price</p>
-                <p className="font-medium">${stockData.price}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Change</p>
-                <p className={`font-medium ${stockData.change.startsWith('-') ? 'text-destructive' : 'text-green-600'}`}>
-                  {stockData.change} ({stockData.changesPercentage})
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Volume</p>
-                <p className="font-medium">{stockData.volume}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {analysisResult && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              AI Analysis Results
-              <div className="flex gap-2">
-                <Badge variant="secondary">
-                  Confidence: {analysisResult.confidence}%
-                </Badge>
-                <Badge 
-                  variant={
-                    analysisResult.riskLevel === 'low' ? 'default' : 
-                    analysisResult.riskLevel === 'medium' ? 'secondary' : 'destructive'
-                  }
-                >
-                  Risk: {analysisResult.riskLevel}
-                </Badge>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Analysis
-              </h4>
-              <Textarea 
-                value={analysisResult.analysis} 
-                readOnly 
-                className="min-h-[200px] resize-none"
-              />
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-2 flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Recommendation
-              </h4>
-              <Textarea 
-                value={analysisResult.recommendation} 
-                readOnly 
-                className="min-h-[100px] resize-none"
-              />
-            </div>
+        <>
+          {/* Core Market Data Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Market Cap
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{analysisResult.coreData.marketCap}</div>
+                <p className="text-xs text-muted-foreground">P/E: {formatNumber(analysisResult.coreData.pe)}</p>
+              </CardContent>
+            </Card>
 
-            {(analysisResult.targetPrice || analysisResult.stopLoss) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {analysisResult.targetPrice && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Volume
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{analysisResult.coreData.volume}</div>
+                <p className="text-xs text-muted-foreground">Relative: {analysisResult.coreData.relativeVolume}%</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  52W Range
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold">${analysisResult.coreData.yearHighLow}</div>
+                <div className="w-full bg-secondary rounded-full h-2 mt-2">
+                  <div 
+                    className="bg-primary rounded-full h-2" 
+                    style={{ width: `${analysisResult.coreData.positionInRange}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{analysisResult.coreData.positionInRange.toFixed(1)}% of range</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Recommendation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Badge className={getRecommendationColor(analysisResult.insights.recommendation)}>
+                  {analysisResult.insights.recommendation}
+                </Badge>
+                <p className="text-xs text-muted-foreground mt-2">Confidence: {analysisResult.insights.confidence}%</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Technical Analysis Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Technical Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Trend Analysis */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Trend Direction</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">Short-term (20D):</span>
+                      <span className={`text-sm font-medium ${getTrendColor(analysisResult.technicals.trend.shortTerm)}`}>
+                        {analysisResult.technicals.trend.shortTerm}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Medium-term (50D):</span>
+                      <span className={`text-sm font-medium ${getTrendColor(analysisResult.technicals.trend.mediumTerm)}`}>
+                        {analysisResult.technicals.trend.mediumTerm}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Long-term (200D):</span>
+                      <span className={`text-sm font-medium ${getTrendColor(analysisResult.technicals.trend.longTerm)}`}>
+                        {analysisResult.technicals.trend.longTerm}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Moving Averages */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Moving Averages</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">MA20:</span>
+                      <span className="text-sm font-medium">{formatPrice(analysisResult.technicals.movingAverages.ma20)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">MA50:</span>
+                      <span className="text-sm font-medium">{formatPrice(analysisResult.technicals.movingAverages.ma50)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">MA200:</span>
+                      <span className="text-sm font-medium">{formatPrice(analysisResult.technicals.movingAverages.ma200)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Momentum Indicators */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Momentum & Volatility</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">RSI (14):</span>
+                        <span className={`text-sm font-medium ${getRSIColor(analysisResult.technicals.indicators.rsi)}`}>
+                          {analysisResult.technicals.indicators.rsi.toFixed(1)}
+                        </span>
+                      </div>
+                      <Progress value={analysisResult.technicals.indicators.rsi} className="h-2" />
+                      <p className="text-xs text-muted-foreground mt-1">{analysisResult.technicals.indicators.rsiSignal}</p>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">20D Momentum:</span>
+                      <span className={`text-sm font-medium ${analysisResult.technicals.indicators.momentum > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {analysisResult.technicals.indicators.momentum.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Volatility (ATR):</span>
+                      <span className="text-sm font-medium">${analysisResult.technicals.indicators.volatility.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sentiment & Forecast Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Market Sentiment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm">Sentiment Score</span>
+                    <span className="text-sm font-medium">{analysisResult.sentiment.score}/100</span>
+                  </div>
+                  <Progress value={analysisResult.sentiment.score} className="h-2" />
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Recent News:</span>
+                    <span className="text-sm font-medium">{analysisResult.sentiment.newsCount} articles</span>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Analyst Ratings:</p>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-green-50 p-2 rounded">
+                        <div className="text-lg font-bold text-green-600">{analysisResult.sentiment.analystRatings.buy}</div>
+                        <div className="text-xs text-green-600">BUY</div>
+                      </div>
+                      <div className="bg-yellow-50 p-2 rounded">
+                        <div className="text-lg font-bold text-yellow-600">{analysisResult.sentiment.analystRatings.hold}</div>
+                        <div className="text-xs text-yellow-600">HOLD</div>
+                      </div>
+                      <div className="bg-red-50 p-2 rounded">
+                        <div className="text-lg font-bold text-red-600">{analysisResult.sentiment.analystRatings.sell}</div>
+                        <div className="text-xs text-red-600">SELL</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  AI Forecast & Risk
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm">AI Probability (Outperform)</span>
+                    <span className="text-sm font-medium">{analysisResult.forecast.aiProbability}%</span>
+                  </div>
+                  <Progress value={analysisResult.forecast.aiProbability} className="h-2" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm">Risk Score</span>
+                    <span className="text-sm font-medium">{analysisResult.forecast.riskScore}/100</span>
+                  </div>
+                  <Progress value={analysisResult.forecast.riskScore} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">Expected Volatility: {analysisResult.forecast.expectedVolatility}</p>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Target Price</p>
-                    <p className="font-medium text-green-600">${analysisResult.targetPrice}</p>
+                    <p className="text-lg font-bold text-green-600">{formatPrice(analysisResult.forecast.targetPrice)}</p>
                   </div>
-                )}
-                {analysisResult.stopLoss && (
                   <div>
                     <p className="text-sm text-muted-foreground">Stop Loss</p>
-                    <p className="font-medium text-destructive">${analysisResult.stopLoss}</p>
+                    <p className="text-lg font-bold text-red-600">{formatPrice(analysisResult.forecast.stopLoss)}</p>
                   </div>
-                )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* AI Insights Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                AI Insights & Strategy
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Market Story</h4>
+                <p className="text-sm leading-relaxed">{analysisResult.insights.summary}</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              <div>
+                <h4 className="font-semibold mb-2">Key Trading Signals</h4>
+                <div className="space-y-2">
+                  {analysisResult.insights.keySignals.map((signal, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <span className="text-sm">{signal}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
+
     </div>
   );
 };

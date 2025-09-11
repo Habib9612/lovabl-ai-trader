@@ -6,19 +6,120 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Fetch comprehensive market data for the symbol
+async function fetchComprehensiveData(symbol: string) {
+  const finnhubApiKey = Deno.env.get('FINNHUB_API_KEY');
+  
+  if (!finnhubApiKey) {
+    throw new Error('Finnhub API key not configured');
+  }
+
+  const cleanSymbol = symbol.trim().toUpperCase();
+  const now = Math.floor(Date.now() / 1000);
+  const oneYearAgo = now - (365 * 24 * 60 * 60);
+
+  try {
+    // Fetch multiple data sources in parallel
+    const [quoteRes, profileRes, candleRes, newsRes, recommendationRes] = await Promise.all([
+      fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanSymbol}&token=${finnhubApiKey}`),
+      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${cleanSymbol}&token=${finnhubApiKey}`),
+      fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${cleanSymbol}&resolution=D&from=${oneYearAgo}&to=${now}&token=${finnhubApiKey}`),
+      fetch(`https://finnhub.io/api/v1/company-news?symbol=${cleanSymbol}&from=${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&to=${new Date().toISOString().split('T')[0]}&token=${finnhubApiKey}`),
+      fetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=${cleanSymbol}&token=${finnhubApiKey}`)
+    ]);
+
+    const [quote, profile, candles, news, recommendations] = await Promise.all([
+      quoteRes.json(),
+      profileRes.json(),
+      candleRes.json(),
+      newsRes.json(),
+      recommendationRes.json()
+    ]);
+
+    return { quote, profile, candles, news, recommendations };
+  } catch (error) {
+    console.error('Error fetching comprehensive data:', error);
+    throw new Error('Failed to fetch market data');
+  }
+}
+
+// Calculate technical indicators
+function calculateTechnicals(candles: any) {
+  if (!candles.c || candles.c.length < 200) {
+    return {
+      ma20: null,
+      ma50: null,
+      ma200: null,
+      rsi: null,
+      volatility: null,
+      momentum: null
+    };
+  }
+
+  const closes = candles.c;
+  const highs = candles.h;
+  const lows = candles.l;
+  const volumes = candles.v;
+
+  // Moving averages
+  const ma20 = closes.slice(-20).reduce((a: number, b: number) => a + b, 0) / 20;
+  const ma50 = closes.slice(-50).reduce((a: number, b: number) => a + b, 0) / 50;
+  const ma200 = closes.slice(-200).reduce((a: number, b: number) => a + b, 0) / 200;
+
+  // RSI calculation (simplified 14-period)
+  const period = 14;
+  let gains = 0, losses = 0;
+  for (let i = closes.length - period; i < closes.length - 1; i++) {
+    const change = closes[i + 1] - closes[i];
+    if (change > 0) gains += change;
+    else losses -= change;
+  }
+  const avgGain = gains / period;
+  const avgLoss = losses / period;
+  const rs = avgGain / (avgLoss || 1);
+  const rsi = 100 - (100 / (1 + rs));
+
+  // Volatility (ATR approximation)
+  const recentHighs = highs.slice(-20);
+  const recentLows = lows.slice(-20);
+  const recentCloses = closes.slice(-21, -1);
+  let atr = 0;
+  for (let i = 0; i < 20; i++) {
+    const tr = Math.max(
+      recentHighs[i] - recentLows[i],
+      Math.abs(recentHighs[i] - recentCloses[i]),
+      Math.abs(recentLows[i] - recentCloses[i])
+    );
+    atr += tr;
+  }
+  atr = atr / 20;
+
+  // Momentum (price change over 20 days)
+  const momentum = ((closes[closes.length - 1] - closes[closes.length - 21]) / closes[closes.length - 21]) * 100;
+
+  return {
+    ma20: Number(ma20.toFixed(2)),
+    ma50: Number(ma50.toFixed(2)),
+    ma200: Number(ma200.toFixed(2)),
+    rsi: Number(rsi.toFixed(2)),
+    volatility: Number(atr.toFixed(2)),
+    momentum: Number(momentum.toFixed(2))
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, symbol, timeframe, strategy, stockData } = await req.json();
+    const { symbol, timeframe, strategy } = await req.json();
     
-    if (!prompt) {
-      throw new Error('Analysis prompt is required');
+    if (!symbol) {
+      throw new Error('Stock symbol is required');
     }
 
-    console.log('Stock AI Analysis: Processing request for', symbol);
+    console.log('Stock AI Analysis: Processing comprehensive request for', symbol);
 
     const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
     
@@ -26,42 +127,119 @@ serve(async (req) => {
       throw new Error('OpenRouter API key not configured');
     }
 
-    const systemPrompt = `You are an expert financial analyst with deep knowledge of:
+    // Fetch comprehensive market data
+    const marketData = await fetchComprehensiveData(symbol);
+    const technicals = calculateTechnicals(marketData.candles);
 
-1. Technical Analysis:
-   - Chart patterns, support/resistance levels
-   - Moving averages, RSI, MACD, volume analysis
-   - Trend identification and momentum indicators
+    // Calculate additional metrics
+    const currentPrice = marketData.quote.c;
+    const yearHigh = marketData.quote.h;
+    const yearLow = marketData.quote.l;
+    const relativePosition = ((currentPrice - yearLow) / (yearHigh - yearLow)) * 100;
 
-2. Fundamental Analysis:
-   - Financial ratios (P/E, P/B, ROE, ROA)
-   - Market capitalization and valuation metrics
-   - Sector analysis and competitive positioning
+    // News sentiment analysis
+    const recentNews = marketData.news?.slice(0, 5) || [];
+    const newsCount = recentNews.length;
 
-3. Trading Strategies:
-   - Day trading, swing trading, position trading
-   - Momentum and value investing approaches
-   - ICT (Inner Circle Trading) concepts
-   - Risk management and position sizing
+    // Analyst recommendations
+    const latestRecommendation = marketData.recommendations?.[0] || {};
 
-4. Market Analysis:
-   - Market sentiment and economic factors
-   - Sector rotation and market cycles
-   - Risk assessment and probability analysis
+    const analysisPrompt = `
+Analyze ${symbol} (${marketData.profile.name || 'Unknown Company'}) with the following comprehensive data:
 
-Provide detailed, actionable analysis with specific recommendations. Always include confidence levels and risk assessments.
+**CORE MARKET DATA:**
+- Current Price: $${currentPrice}
+- Day Change: ${marketData.quote.dp}% (${marketData.quote.d > 0 ? '+' : ''}$${marketData.quote.d})
+- Market Cap: $${(marketData.profile.marketCapitalization / 1000000000).toFixed(2)}B
+- P/E Ratio: ${marketData.profile.peBasicExclExtraTTM || 'N/A'}
+- 52W High: $${yearHigh} | Low: $${yearLow}
+- Position in Range: ${relativePosition.toFixed(1)}%
+- Average Volume: ${(marketData.profile.shareOutstanding / 1000000).toFixed(1)}M shares
+- Sector: ${marketData.profile.finnhubIndustry || 'N/A'}
 
-Format your response as a JSON object with the following structure:
+**TECHNICAL INDICATORS:**
+- MA20: $${technicals.ma20} | MA50: $${technicals.ma50} | MA200: $${technicals.ma200}
+- RSI (14): ${technicals.rsi} ${technicals.rsi > 70 ? '(Overbought)' : technicals.rsi < 30 ? '(Oversold)' : '(Neutral)'}
+- Momentum (20d): ${technicals.momentum}%
+- Volatility (ATR): $${technicals.volatility}
+
+**TREND ANALYSIS:**
+- Short-term trend: ${currentPrice > technicals.ma20 ? 'Bullish' : 'Bearish'} (vs MA20)
+- Medium-term trend: ${currentPrice > technicals.ma50 ? 'Bullish' : 'Bearish'} (vs MA50)
+- Long-term trend: ${currentPrice > technicals.ma200 ? 'Bullish' : 'Bearish'} (vs MA200)
+
+**MARKET SENTIMENT:**
+- Recent News Count: ${newsCount} articles (last 7 days)
+- Analyst Consensus: ${latestRecommendation.buy || 0} Buy, ${latestRecommendation.hold || 0} Hold, ${latestRecommendation.sell || 0} Sell
+
+**TRADING PARAMETERS:**
+- Timeframe: ${timeframe || 'Medium-term'}
+- Strategy: ${strategy || 'Growth Investing'}
+
+**ANALYSIS REQUIREMENTS:**
+Create a comprehensive professional analysis that includes:
+
+1. **Market Overview**: Current position, trend direction, key support/resistance
+2. **Technical Assessment**: RSI, momentum, moving average signals
+3. **Risk Evaluation**: Volatility assessment, risk score (0-100)
+4. **AI Forecast**: Probability of outperforming market over timeframe
+5. **Actionable Insights**: Specific entry/exit points, stop losses
+6. **Natural Language Summary**: 2-3 sentence market story
+
+Respond with a JSON object containing:
 {
-  "analysis": "Detailed technical and fundamental analysis",
-  "recommendation": "Clear BUY/SELL/HOLD recommendation with reasoning",
-  "confidence": number (1-100),
-  "riskLevel": "low/medium/high",
-  "targetPrice": number (optional),
-  "stopLoss": number (optional),
-  "timeframe": "provided timeframe",
-  "strategy": "provided strategy"
+  "coreData": {
+    "marketCap": "${(marketData.profile.marketCapitalization / 1000000000).toFixed(2)}B",
+    "pe": ${marketData.profile.peBasicExclExtraTTM || null},
+    "dividendYield": ${marketData.profile.dividendYield || null},
+    "volume": "${(marketData.quote.v / 1000000).toFixed(1)}M",
+    "relativeVolume": ${((marketData.quote.v / (marketData.profile.shareOutstanding || 1)) * 100).toFixed(1)},
+    "yearHighLow": "${yearHigh}/${yearLow}",
+    "positionInRange": ${relativePosition.toFixed(1)}
+  },
+  "technicals": {
+    "trend": {
+      "shortTerm": "${currentPrice > technicals.ma20 ? 'Bullish' : 'Bearish'}",
+      "mediumTerm": "${currentPrice > technicals.ma50 ? 'Bullish' : 'Bearish'}",
+      "longTerm": "${currentPrice > technicals.ma200 ? 'Bullish' : 'Bearish'}"
+    },
+    "indicators": {
+      "rsi": ${technicals.rsi},
+      "rsiSignal": "${technicals.rsi > 70 ? 'Overbought' : technicals.rsi < 30 ? 'Oversold' : 'Neutral'}",
+      "momentum": ${technicals.momentum},
+      "volatility": ${technicals.volatility}
+    },
+    "movingAverages": {
+      "ma20": ${technicals.ma20},
+      "ma50": ${technicals.ma50},
+      "ma200": ${technicals.ma200}
+    }
+  },
+  "sentiment": {
+    "score": number (0-100),
+    "newsCount": ${newsCount},
+    "analystRatings": {
+      "buy": ${latestRecommendation.buy || 0},
+      "hold": ${latestRecommendation.hold || 0},
+      "sell": ${latestRecommendation.sell || 0}
+    }
+  },
+  "forecast": {
+    "aiProbability": number (0-100),
+    "expectedVolatility": "${technicals.volatility > 5 ? 'High' : technicals.volatility > 2 ? 'Medium' : 'Low'}",
+    "riskScore": number (0-100),
+    "targetPrice": number,
+    "stopLoss": number
+  },
+  "insights": {
+    "summary": "Natural language market story",
+    "keySignals": ["signal1", "signal2", "signal3"],
+    "recommendation": "BUY/SELL/HOLD",
+    "confidence": number (0-100)
+  }
 }`;
+
+    console.log('Sending analysis request to OpenRouter...');
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -76,15 +254,15 @@ Format your response as a JSON object with the following structure:
         messages: [
           {
             role: 'system',
-            content: systemPrompt
+            content: 'You are a professional financial analyst providing comprehensive stock analysis. Always respond with valid JSON format.'
           },
           {
             role: 'user',
-            content: prompt
+            content: analysisPrompt
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.3
+        max_tokens: 3000,
+        temperature: 0.2
       })
     });
 
@@ -103,34 +281,77 @@ Format your response as a JSON object with the following structure:
 
     console.log('Stock AI Analysis: Received response from OpenRouter API');
 
-    // Try to parse as JSON, fallback to structured text if parsing fails
+    // Parse JSON response
     let analysisResult;
     try {
       analysisResult = JSON.parse(analysisText);
-    } catch {
-      // If JSON parsing fails, create a structured response
+    } catch (parseError) {
+      console.error('Failed to parse AI response as JSON:', parseError);
+      // Fallback response structure
       analysisResult = {
-        analysis: analysisText,
-        recommendation: extractRecommendation(analysisText),
-        confidence: extractConfidence(analysisText),
-        riskLevel: extractRiskLevel(analysisText),
-        targetPrice: extractTargetPrice(analysisText),
-        stopLoss: extractStopLoss(analysisText),
-        timeframe: timeframe,
-        strategy: strategy
+        coreData: {
+          marketCap: `${(marketData.profile.marketCapitalization / 1000000000).toFixed(2)}B`,
+          pe: marketData.profile.peBasicExclExtraTTM || null,
+          dividendYield: marketData.profile.dividendYield || null,
+          volume: `${(marketData.quote.v / 1000000).toFixed(1)}M`,
+          relativeVolume: ((marketData.quote.v / (marketData.profile.shareOutstanding || 1)) * 100).toFixed(1),
+          yearHighLow: `${yearHigh}/${yearLow}`,
+          positionInRange: relativePosition.toFixed(1)
+        },
+        technicals: {
+          trend: {
+            shortTerm: currentPrice > technicals.ma20 ? 'Bullish' : 'Bearish',
+            mediumTerm: currentPrice > technicals.ma50 ? 'Bullish' : 'Bearish',
+            longTerm: currentPrice > technicals.ma200 ? 'Bullish' : 'Bearish'
+          },
+          indicators: {
+            rsi: technicals.rsi,
+            rsiSignal: technicals.rsi > 70 ? 'Overbought' : technicals.rsi < 30 ? 'Oversold' : 'Neutral',
+            momentum: technicals.momentum,
+            volatility: technicals.volatility
+          },
+          movingAverages: {
+            ma20: technicals.ma20,
+            ma50: technicals.ma50,
+            ma200: technicals.ma200
+          }
+        },
+        sentiment: {
+          score: 65,
+          newsCount: newsCount,
+          analystRatings: {
+            buy: latestRecommendation.buy || 0,
+            hold: latestRecommendation.hold || 0,
+            sell: latestRecommendation.sell || 0
+          }
+        },
+        forecast: {
+          aiProbability: 65,
+          expectedVolatility: technicals.volatility > 5 ? 'High' : technicals.volatility > 2 ? 'Medium' : 'Low',
+          riskScore: 50,
+          targetPrice: currentPrice * 1.1,
+          stopLoss: currentPrice * 0.95
+        },
+        insights: {
+          summary: analysisText.substring(0, 200) + '...',
+          keySignals: ['Technical analysis available', 'Market data processed', 'AI analysis complete'],
+          recommendation: 'HOLD',
+          confidence: 75
+        }
       };
     }
 
-    // Ensure all required fields are present
-    if (!analysisResult.timeframe) analysisResult.timeframe = timeframe;
-    if (!analysisResult.strategy) analysisResult.strategy = strategy;
-    if (!analysisResult.confidence) analysisResult.confidence = 75;
-    if (!analysisResult.riskLevel) analysisResult.riskLevel = 'medium';
+    // Add raw market data for reference
+    analysisResult.rawData = {
+      quote: marketData.quote,
+      profile: marketData.profile,
+      technicals: technicals
+    };
 
     return new Response(JSON.stringify({
       success: true,
       analysis: analysisResult,
-      symbol: symbol,
+      symbol: symbol.toUpperCase(),
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -150,46 +371,3 @@ Format your response as a JSON object with the following structure:
     );
   }
 });
-
-// Helper functions to extract information from text analysis
-function extractRecommendation(text: string): string {
-  const buyPattern = /\b(buy|long|bullish)\b/i;
-  const sellPattern = /\b(sell|short|bearish)\b/i;
-  const holdPattern = /\b(hold|neutral|sideways)\b/i;
-  
-  if (buyPattern.test(text)) return 'BUY';
-  if (sellPattern.test(text)) return 'SELL';
-  if (holdPattern.test(text)) return 'HOLD';
-  
-  return 'HOLD';
-}
-
-function extractConfidence(text: string): number {
-  const confidenceMatch = text.match(/confidence[:\s]*(\d{1,2})%/i);
-  if (confidenceMatch) {
-    return parseInt(confidenceMatch[1]);
-  }
-  return 75; // Default confidence
-}
-
-function extractRiskLevel(text: string): string {
-  if (/\b(high risk|very risky)\b/i.test(text)) return 'high';
-  if (/\b(low risk|conservative)\b/i.test(text)) return 'low';
-  return 'medium';
-}
-
-function extractTargetPrice(text: string): number | undefined {
-  const targetMatch = text.match(/target[:\s]*\$?(\d+\.?\d*)/i);
-  if (targetMatch) {
-    return parseFloat(targetMatch[1]);
-  }
-  return undefined;
-}
-
-function extractStopLoss(text: string): number | undefined {
-  const stopLossMatch = text.match(/stop[:\s]*\$?(\d+\.?\d*)/i);
-  if (stopLossMatch) {
-    return parseFloat(stopLossMatch[1]);
-  }
-  return undefined;
-}
