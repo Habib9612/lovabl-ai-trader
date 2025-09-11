@@ -1,9 +1,21 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Import Puter.js library dynamically
+const importPuter = async () => {
+  const puterCode = await fetch('https://js.puter.com/v2/').then(r => r.text());
+  // Create a minimal global context for Puter
+  const puter = eval(`
+    const window = globalThis;
+    const document = { body: { appendChild: () => {} } };
+    ${puterCode}
+    puter;
+  `);
+  return puter;
 };
 
 serve(async (req) => {
@@ -18,10 +30,7 @@ serve(async (req) => {
       throw new Error('Image data is required');
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY not configured');
-    }
+    console.log('Chart Analysis: Processing request for ticker:', ticker);
 
     const systemPrompt = `You are an expert financial analyst and technical analysis specialist with deep knowledge of:
 
@@ -64,71 +73,79 @@ Analyze the provided chart image and provide a comprehensive analysis including:
 
 Format your response as a structured JSON with clear sections for each analysis type.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Analyze this ${ticker || 'financial'} chart using ICT strategy, technical analysis, and fundamental considerations. Provide detailed insights for different trading strategies.`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageBase64
-                }
-              }
-            ]
-          }
-        ],
-        max_completion_tokens: 2000,
-        temperature: 0.3
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const analysis = data.choices[0].message.content;
-
-    console.log(`Successfully analyzed chart for ${ticker || 'unknown ticker'}`);
-
-    // Try to parse as JSON, fallback to plain text if parsing fails
-    let structuredAnalysis;
     try {
-      structuredAnalysis = JSON.parse(analysis);
-    } catch {
-      structuredAnalysis = {
-        raw_analysis: analysis,
+      // Try to use Puter.js
+      const puter = await importPuter();
+      
+      const userPrompt = `Analyze this ${ticker || 'financial'} chart using ICT strategy, technical analysis, and fundamental considerations. Provide detailed insights for different trading strategies.`;
+      
+      const response = await puter.ai.chat(
+        userPrompt,
+        imageBase64,
+        { 
+          model: "gpt-5-nano",
+          max_tokens: 2000,
+          temperature: 0.3
+        }
+      );
+
+      console.log('Chart Analysis: Received response from Puter AI');
+
+      // Try to parse as JSON, fallback to plain text if parsing fails
+      let structuredAnalysis;
+      try {
+        structuredAnalysis = JSON.parse(response);
+      } catch {
+        structuredAnalysis = {
+          raw_analysis: response,
+          ticker: ticker || 'N/A',
+          analysis_type: analysisType,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      return new Response(JSON.stringify({
+        analysis: structuredAnalysis,
         ticker: ticker || 'N/A',
-        analysis_type: analysisType,
         timestamp: new Date().toISOString()
-      };
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+
+    } catch (puterError) {
+      console.error('Puter.js error:', puterError);
+      
+      // Fallback to direct API call without OpenAI key requirement
+      try {
+        // Use a simple text-based analysis as fallback
+        const fallbackAnalysis = {
+          market_structure: "Unable to analyze chart image - please try again",
+          entry_zones: ["Chart analysis temporarily unavailable"],
+          targets: ["Please re-upload chart"],
+          stop_loss: "Risk management required",
+          confidence: 1,
+          timeframe: "N/A",
+          risk_reward: "N/A",
+          key_levels: ["Chart upload needed"],
+          scenario_analysis: {
+            bullish: "Chart analysis service temporarily unavailable",
+            bearish: "Please try uploading the chart image again"
+          },
+          error: "Chart analysis service is currently experiencing issues"
+        };
+
+        return new Response(JSON.stringify({
+          analysis: fallbackAnalysis,
+          ticker: ticker || 'N/A',
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (fallbackError) {
+        throw new Error('Chart analysis service unavailable');
+      }
     }
 
-    return new Response(JSON.stringify({
-      analysis: structuredAnalysis,
-      ticker: ticker || 'N/A',
-      timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
     console.error('Error in chart-analysis function:', error);
     return new Response(
