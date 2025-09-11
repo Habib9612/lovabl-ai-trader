@@ -268,10 +268,10 @@ export const StockAIAnalysis = () => {
                 <div className="w-full bg-secondary rounded-full h-2 mt-2">
                   <div 
                     className="bg-primary rounded-full h-2" 
-                    style={{ width: `${analysisResult.coreData.positionInRange}%` }}
+                    style={{ width: `${Number(analysisResult.coreData.positionInRange) || 0}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{analysisResult.coreData.positionInRange.toFixed(1)}% of range</p>
+                <p className="text-xs text-muted-foreground mt-1">{isNaN(Number(analysisResult.coreData.positionInRange)) ? 'N/A' : `${Number(analysisResult.coreData.positionInRange).toFixed(1)}% of range`}</p>
               </CardContent>
             </Card>
 

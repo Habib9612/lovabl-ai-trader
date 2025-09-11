@@ -294,9 +294,9 @@ Respond with a JSON object containing:
           pe: marketData.profile.peBasicExclExtraTTM || null,
           dividendYield: marketData.profile.dividendYield || null,
           volume: `${(marketData.quote.v / 1000000).toFixed(1)}M`,
-          relativeVolume: ((marketData.quote.v / (marketData.profile.shareOutstanding || 1)) * 100).toFixed(1),
+          relativeVolume: Number(((marketData.quote.v / (marketData.profile.shareOutstanding || 1)) * 100).toFixed(1)),
           yearHighLow: `${yearHigh}/${yearLow}`,
-          positionInRange: relativePosition.toFixed(1)
+          positionInRange: Number(relativePosition.toFixed(1))
         },
         technicals: {
           trend: {
