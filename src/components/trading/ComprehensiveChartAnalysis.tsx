@@ -49,8 +49,15 @@ export const ComprehensiveChartAnalysis = () => {
 
     setLoading(true);
     try {
-      // Fetch Finviz fundamentals
-      await fetchStockData(symbol.toUpperCase());
+      // Try to fetch Finviz fundamentals (continue even if this fails)
+      let fundamentalsData = null;
+      try {
+        await fetchStockData(symbol.toUpperCase());
+        fundamentalsData = stockData;
+      } catch (finvizError) {
+        console.warn('Finviz data not available for', symbol, '- proceeding with chart analysis only');
+        toast.info(`Fundamental data not available for ${symbol.toUpperCase()}, proceeding with chart analysis`);
+      }
       
       // Convert file to base64 for analysis
       const reader = new FileReader();
@@ -67,7 +74,7 @@ export const ComprehensiveChartAnalysis = () => {
         // Parse analysis for structured data
         const parsedResult: AnalysisResult = {
           symbol: symbol.toUpperCase(),
-          fundamentals: stockData,
+          fundamentals: fundamentalsData,
           analysis: chartAnalysis.analysis,
           confidence: 75, // Default confidence
           entries: ['Entry levels will be parsed from analysis'],
