@@ -15,10 +15,10 @@ serve(async (req) => {
 
   try {
     const { symbol } = await req.json();
-    const apiKey = Deno.env.get('FINANCIAL_DATA_API_KEY');
+    const apiKey = Deno.env.get('FINNHUB_API_KEY');
     
     if (!apiKey) {
-      throw new Error('Financial data API key not configured');
+      throw new Error('Finnhub API key not configured');
     }
 
     // Initialize Supabase client for caching
@@ -28,12 +28,12 @@ serve(async (req) => {
 
     console.log(`Fetching financial data for ${symbol}`);
 
-    // Check cache first (data is valid for 5 minutes)
+    // Check cache first (data is valid for 1 minute for real-time updates)
     const { data: cachedData } = await supabase
       .from('financial_data_cache')
       .select('*')
       .eq('symbol', symbol.toUpperCase())
-      .gte('last_updated', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      .gte('last_updated', new Date(Date.now() - 60 * 1000).toISOString())
       .single();
 
     if (cachedData) {
@@ -48,51 +48,59 @@ serve(async (req) => {
       });
     }
 
-    // Fetch company profile and key metrics from Financial Modeling Prep
-    const [profileResponse, metricsResponse, quoteResponse] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/key-metrics/${symbol}?limit=1&apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${apiKey}`)
+    // Fetch data from Finnhub API
+    const [quoteResponse, profileResponse, metricsResponse] = await Promise.all([
+      fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`),
+      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`),
+      fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${apiKey}`)
     ]);
 
-    const [profile, metrics, quote] = await Promise.all([
+    if (!quoteResponse.ok || !profileResponse.ok || !metricsResponse.ok) {
+      throw new Error('Failed to fetch data from Finnhub API');
+    }
+
+    const [quoteData, profileData, metricsData] = await Promise.all([
+      quoteResponse.json(),
       profileResponse.json(),
-      metricsResponse.json(),
-      quoteResponse.json()
+      metricsResponse.json()
     ]);
 
-    const profileData = Array.isArray(profile) ? profile[0] : profile;
-    const metricsData = Array.isArray(metrics) ? metrics[0] : metrics;
-    const quoteData = Array.isArray(quote) ? quote[0] : quote;
+    const quote = quoteData || {};
+    const profile = profileData || {};
+    const metrics = metricsData?.metric || {};
 
-    if (!profileData || !quoteData) {
+    if (!quote.c && !profile.name) {
       throw new Error(`No data found for symbol ${symbol}`);
     }
+
+    // Calculate derived values
+    const change = quote.c && quote.pc ? quote.c - quote.pc : null;
+    const changePercent = quote.c && quote.pc ? ((quote.c - quote.pc) / quote.pc) * 100 : null;
 
     // Structure the response similar to what the frontend expects
     const fundamentals = {
       symbol: symbol.toUpperCase(),
-      companyName: profileData.companyName || 'N/A',
-      sector: profileData.sector || 'N/A',
-      industry: profileData.industry || 'N/A',
-      marketCap: profileData.mktCap ? `${(profileData.mktCap / 1e9).toFixed(2)}B` : 'N/A',
-      pe: quoteData.pe ? quoteData.pe.toFixed(2) : 'N/A',
-      eps: quoteData.eps ? quoteData.eps.toFixed(2) : 'N/A',
-      price: quoteData.price ? quoteData.price.toFixed(2) : 'N/A',
-      change: quoteData.change ? quoteData.change.toFixed(2) : 'N/A',
-      changesPercentage: quoteData.changesPercentage ? `${quoteData.changesPercentage.toFixed(2)}%` : 'N/A',
-      volume: quoteData.volume ? quoteData.volume.toLocaleString() : 'N/A',
-      avgVolume: quoteData.avgVolume ? quoteData.avgVolume.toLocaleString() : 'N/A',
-      previousClose: quoteData.previousClose ? quoteData.previousClose.toFixed(2) : 'N/A',
-      dayLow: quoteData.dayLow ? quoteData.dayLow.toFixed(2) : 'N/A',
-      dayHigh: quoteData.dayHigh ? quoteData.dayHigh.toFixed(2) : 'N/A',
-      yearHigh: quoteData.yearHigh ? quoteData.yearHigh.toFixed(2) : 'N/A',
-      yearLow: quoteData.yearLow ? quoteData.yearLow.toFixed(2) : 'N/A',
-      priceToBook: metricsData?.priceToBookRatio ? metricsData.priceToBookRatio.toFixed(2) : 'N/A',
-      debtToEquity: metricsData?.debtToEquityRatio ? metricsData.debtToEquityRatio.toFixed(2) : 'N/A',
-      returnOnEquity: metricsData?.returnOnEquity ? `${(metricsData.returnOnEquity * 100).toFixed(2)}%` : 'N/A',
-      returnOnAssets: metricsData?.returnOnAssets ? `${(metricsData.returnOnAssets * 100).toFixed(2)}%` : 'N/A',
-      description: profileData.description || 'N/A'
+      companyName: profile.name || 'N/A',
+      sector: profile.finnhubIndustry || 'N/A',
+      industry: profile.finnhubIndustry || 'N/A',
+      marketCap: profile.marketCapitalization ? `${(profile.marketCapitalization / 1000).toFixed(2)}B` : 'N/A',
+      pe: metrics.peBasicExclExtraTTM ? metrics.peBasicExclExtraTTM.toFixed(2) : 'N/A',
+      eps: metrics.epsBasicExclExtraItemsTTM ? metrics.epsBasicExclExtraItemsTTM.toFixed(2) : 'N/A',
+      price: quote.c ? quote.c.toFixed(2) : 'N/A',
+      change: change ? change.toFixed(2) : 'N/A',
+      changesPercentage: changePercent ? `${changePercent.toFixed(2)}%` : 'N/A',
+      volume: quote.v ? quote.v.toLocaleString() : 'N/A',
+      avgVolume: metrics.avgVol10Day ? metrics.avgVol10Day.toLocaleString() : 'N/A',
+      previousClose: quote.pc ? quote.pc.toFixed(2) : 'N/A',
+      dayLow: quote.l ? quote.l.toFixed(2) : 'N/A',
+      dayHigh: quote.h ? quote.h.toFixed(2) : 'N/A',
+      yearHigh: metrics['52WeekHigh'] ? metrics['52WeekHigh'].toFixed(2) : 'N/A',
+      yearLow: metrics['52WeekLow'] ? metrics['52WeekLow'].toFixed(2) : 'N/A',
+      priceToBook: metrics.pbAnnual ? metrics.pbAnnual.toFixed(2) : 'N/A',
+      debtToEquity: metrics.totalDebt2TotalEquityAnnual ? metrics.totalDebt2TotalEquityAnnual.toFixed(2) : 'N/A',
+      returnOnEquity: metrics.roeTTM ? `${(metrics.roeTTM * 100).toFixed(2)}%` : 'N/A',
+      returnOnAssets: metrics.roaTTM ? `${(metrics.roaTTM * 100).toFixed(2)}%` : 'N/A',
+      description: profile.weburl || 'N/A'
     };
 
     console.log(`Successfully fetched data for ${symbol}:`, fundamentals);
