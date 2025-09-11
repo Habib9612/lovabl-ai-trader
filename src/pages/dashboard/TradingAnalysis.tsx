@@ -10,6 +10,7 @@ import { FinvizChart } from '@/components/trading/FinvizChart';
 import { ICTAnalysis } from '@/components/trading/ICTAnalysis';
 import { QuantResearchAgent } from '@/components/trading/QuantResearchAgent';
 import { DemoTradingPanel } from '@/components/trading/DemoTradingPanel';
+import { ComprehensiveChartAnalysis } from '@/components/trading/ComprehensiveChartAnalysis';
 
 const TradingAnalysis = () => {
   return (
@@ -110,7 +111,10 @@ const TradingAnalysis = () => {
           </TabsContent>
 
           <TabsContent value="image-analysis" className="p-8 m-0">
-            <ImageChartAnalysis />
+            <div className="space-y-8">
+              <ComprehensiveChartAnalysis />
+              <ImageChartAnalysis />
+            </div>
           </TabsContent>
 
           <TabsContent value="ai-training" className="p-8 m-0">
