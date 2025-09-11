@@ -5,19 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Import Puter.js library dynamically
-const importPuter = async () => {
-  const puterCode = await fetch('https://js.puter.com/v2/').then(r => r.text());
-  // Create a minimal global context for Puter
-  const puter = eval(`
-    const window = globalThis;
-    const document = { body: { appendChild: () => {} } };
-    ${puterCode}
-    puter;
-  `);
-  return puter;
-};
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -73,78 +60,85 @@ Analyze the provided chart image and provide a comprehensive analysis including:
 
 Format your response as a structured JSON with clear sections for each analysis type.`;
 
-    try {
-      // Try to use Puter.js
-      const puter = await importPuter();
-      
-      const userPrompt = `Analyze this ${ticker || 'financial'} chart using ICT strategy, technical analysis, and fundamental considerations. Provide detailed insights for different trading strategies.`;
-      
-      const response = await puter.ai.chat(
-        userPrompt,
-        imageBase64,
-        { 
-          model: "gpt-5-nano",
-          max_tokens: 2000,
-          temperature: 0.3
-        }
-      );
-
-      console.log('Chart Analysis: Received response from Puter AI');
-
-      // Try to parse as JSON, fallback to plain text if parsing fails
-      let structuredAnalysis;
-      try {
-        structuredAnalysis = JSON.parse(response);
-      } catch {
-        structuredAnalysis = {
-          raw_analysis: response,
-          ticker: ticker || 'N/A',
-          analysis_type: analysisType,
-          timestamp: new Date().toISOString()
-        };
-      }
-
-      return new Response(JSON.stringify({
-        analysis: structuredAnalysis,
-        ticker: ticker || 'N/A',
-        timestamp: new Date().toISOString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } catch (puterError) {
-      console.error('Puter.js error:', puterError);
-      
-      // Fallback to direct API call without OpenAI key requirement
-      try {
-        // Use a simple text-based analysis as fallback
-        const fallbackAnalysis = {
-          market_structure: "Unable to analyze chart image - please try again",
-          entry_zones: ["Chart analysis temporarily unavailable"],
-          targets: ["Please re-upload chart"],
-          stop_loss: "Risk management required",
-          confidence: 1,
-          timeframe: "N/A",
-          risk_reward: "N/A",
-          key_levels: ["Chart upload needed"],
-          scenario_analysis: {
-            bullish: "Chart analysis service temporarily unavailable",
-            bearish: "Please try uploading the chart image again"
-          },
-          error: "Chart analysis service is currently experiencing issues"
-        };
-
-        return new Response(JSON.stringify({
-          analysis: fallbackAnalysis,
-          ticker: ticker || 'N/A',
-          timestamp: new Date().toISOString()
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (fallbackError) {
-        throw new Error('Chart analysis service unavailable');
-      }
+    const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
+    
+    if (!openRouterApiKey) {
+      throw new Error('OpenRouter API key not configured');
     }
+
+    const userPrompt = `Analyze this ${ticker || 'financial'} chart using ICT strategy, technical analysis, and fundamental considerations. Provide detailed insights for different trading strategies.`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openRouterApiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://trading-ai-dashboard.lovable.dev',
+        'X-Title': 'Trading AI Dashboard'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: userPrompt
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${imageBase64}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 2000,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenRouter API error:', response.status, errorData);
+      throw new Error(`OpenRouter API error: ${response.status} ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    const analysisText = data.choices[0]?.message?.content;
+
+    if (!analysisText) {
+      throw new Error('No analysis content received from OpenRouter');
+    }
+
+    console.log('Chart Analysis: Received response from OpenRouter API');
+
+    // Try to parse as JSON, fallback to plain text if parsing fails
+    let structuredAnalysis;
+    try {
+      structuredAnalysis = JSON.parse(analysisText);
+    } catch {
+      structuredAnalysis = {
+        raw_analysis: analysisText,
+        ticker: ticker || 'N/A',
+        analysis_type: analysisType,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    return new Response(JSON.stringify({
+      analysis: structuredAnalysis,
+      ticker: ticker || 'N/A',
+      timestamp: new Date().toISOString()
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
     console.error('Error in chart-analysis function:', error);
