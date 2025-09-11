@@ -121,7 +121,8 @@ export const StockAIAnalysis = () => {
     return num.toLocaleString();
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null) => {
+    if (price === null || price === undefined || isNaN(price)) return 'N/A';
     return `$${price.toFixed(2)}`;
   };
 
@@ -353,7 +354,7 @@ export const StockAIAnalysis = () => {
                       <div className="flex justify-between mb-1">
                         <span className="text-sm">RSI (14):</span>
                         <span className={`text-sm font-medium ${getRSIColor(analysisResult.technicals.indicators.rsi)}`}>
-                          {analysisResult.technicals.indicators.rsi.toFixed(1)}
+                          {analysisResult.technicals.indicators.rsi?.toFixed(1) || 'N/A'}
                         </span>
                       </div>
                       <Progress value={analysisResult.technicals.indicators.rsi} className="h-2" />
@@ -362,12 +363,12 @@ export const StockAIAnalysis = () => {
                     <div className="flex justify-between">
                       <span className="text-sm">20D Momentum:</span>
                       <span className={`text-sm font-medium ${analysisResult.technicals.indicators.momentum > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {analysisResult.technicals.indicators.momentum.toFixed(1)}%
+                        {analysisResult.technicals.indicators.momentum?.toFixed(1) || 'N/A'}%
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Volatility (ATR):</span>
-                      <span className="text-sm font-medium">${analysisResult.technicals.indicators.volatility.toFixed(2)}</span>
+                      <span className="text-sm font-medium">${analysisResult.technicals.indicators.volatility?.toFixed(2) || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
