@@ -100,6 +100,48 @@ export type Database = {
         }
         Relationships: []
       }
+      chart_analysis_results: {
+        Row: {
+          analysis_result: Json
+          analysis_type: string | null
+          chart_image_url: string | null
+          confidence_score: number | null
+          created_at: string
+          id: string
+          strategy: string | null
+          symbol: string
+          trading_style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_result: Json
+          analysis_type?: string | null
+          chart_image_url?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          strategy?: string | null
+          symbol: string
+          trading_style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_result?: Json
+          analysis_type?: string | null
+          chart_image_url?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          strategy?: string | null
+          symbol?: string
+          trading_style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_messages: {
         Row: {
           asset_id: string | null
@@ -330,6 +372,30 @@ export type Database = {
           is_published?: boolean | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_data_cache: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          last_updated: string
+          symbol: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id?: string
+          last_updated?: string
+          symbol: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          last_updated?: string
+          symbol?: string
         }
         Relationships: []
       }

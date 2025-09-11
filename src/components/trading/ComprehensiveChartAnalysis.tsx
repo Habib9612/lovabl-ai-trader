@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, TrendingUp, DollarSign, AlertTriangle, Target } from 'lucide-react';
 import { useChartAnalysis } from '@/hooks/useChartAnalysis';
 import { useFinancialData } from '@/hooks/useFinancialData';
+import { useAnalysisHistory } from '@/hooks/useAnalysisHistory';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 // Helper functions to extract structured data from analysis
@@ -65,6 +67,20 @@ export const ComprehensiveChartAnalysis = () => {
 
   const { analyzeChart } = useChartAnalysis();
   const { fetchStockData, stockData, isLoading: financialLoading } = useFinancialData();
+  const { saveAnalysis, history } = useAnalysisHistory();
+  const { user } = useAuth();
+
+  // Show authentication required message if user is not logged in
+  if (!user) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+          <p className="text-gray-600">Please log in to access comprehensive chart analysis features.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,7 +134,22 @@ export const ComprehensiveChartAnalysis = () => {
         };
 
         setAnalysisResult(parsedResult);
-        toast.success('Analysis completed successfully!');
+        
+        // Save analysis to database
+        try {
+          await saveAnalysis(
+            symbol.toUpperCase(),
+            parsedResult,
+            parsedResult.confidence,
+            tradingStyle,
+            strategy
+          );
+          toast.success('Analysis completed and saved successfully!');
+        } catch (saveError) {
+          console.error('Failed to save analysis:', saveError);
+          toast.success('Analysis completed successfully!');
+          toast.warning('Failed to save analysis to history');
+        }
       };
       
       reader.readAsDataURL(chartFile);
@@ -316,6 +347,42 @@ export const ComprehensiveChartAnalysis = () => {
               <Badge variant="outline" className="text-lg px-4 py-2">
                 Confidence: {analysisResult.confidence}%
               </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Analysis History */}
+      {history.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Recent Analysis History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {history.slice(0, 5).map((item) => (
+                <div key={item.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{item.symbol}</h4>
+                      <p className="text-sm text-gray-600">
+                        {item.trading_style} • {item.strategy}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="outline">
+                        {item.confidence_score}% confidence
+                      </Badge>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
