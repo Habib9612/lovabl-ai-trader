@@ -166,31 +166,52 @@ class TLTMonthlyMomentumStrategy {
 
 async function fetchStockData(symbol: string): Promise<{prices: number[], dates: string[]} | null> {
   const finnhubApiKey = Deno.env.get('FINNHUB_API_KEY');
-  
+
   if (!finnhubApiKey) {
-    throw new Error('Finnhub API key not configured');
+    console.error('Finnhub API key not configured. Please set FINNHUB_API_KEY in Supabase Edge Function secrets.');
+    return null;
   }
+
+  const cleanSymbol = symbol.trim().toUpperCase();
 
   try {
     // Get 2 years of data
     const endDate = Math.floor(Date.now() / 1000);
     const startDate = endDate - (2 * 365 * 24 * 60 * 60); // 2 years ago
 
-    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${startDate}&to=${endDate}&token=${finnhubApiKey}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
+    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${cleanSymbol}&resolution=D&from=${startDate}&to=${endDate}&token=${finnhubApiKey}`;
 
-    if (data.s !== 'ok') {
-      throw new Error(`Finnhub API error: ${data.s}`);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`Finnhub HTTP error ${response.status}: ${text}`);
+      return null;
     }
 
-    const prices = data.c; // closing prices
-    const timestamps = data.t; // timestamps
-    
-    const dates = timestamps.map((ts: number) => new Date(ts * 1000).toISOString().split('T')[0]);
+    const data = await response.json();
 
-    return { prices, dates };
+    // Expected success shape
+    if (data && data.s === 'ok' && Array.isArray(data.c) && Array.isArray(data.t)) {
+      const prices = data.c as number[]; // closing prices
+      const timestamps = data.t as number[]; // timestamps
+      const dates = timestamps.map((ts: number) => new Date(ts * 1000).toISOString().split('T')[0]);
+      return { prices, dates };
+    }
+
+    // Common error shapes from Finnhub
+    if (data && typeof data.error === 'string') {
+      console.error('Finnhub API error:', data.error);
+      return null;
+    }
+
+    if (data && typeof data.s === 'string' && data.s !== 'ok') {
+      console.error('Finnhub API status not ok:', data.s);
+      return null;
+    }
+
+    console.error('Unexpected Finnhub response shape:', data);
+    return null;
   } catch (error) {
     console.error('Error fetching stock data:', error);
     return null;
