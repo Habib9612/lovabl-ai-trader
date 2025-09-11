@@ -11,6 +11,39 @@ import { useChartAnalysis } from '@/hooks/useChartAnalysis';
 import { useFinancialData } from '@/hooks/useFinancialData';
 import { toast } from 'sonner';
 
+// Helper functions to extract structured data from analysis
+const extractEntriesFromAnalysis = (analysis: any): string[] => {
+  if (typeof analysis === 'string') {
+    const entryMatches = analysis.match(/entry.*?(\$?[0-9]+\.?[0-9]*)/gi);
+    return entryMatches ? entryMatches.slice(0, 3) : ['Entry levels to be determined from analysis'];
+  }
+  return analysis?.entries || ['Entry levels to be determined from analysis'];
+};
+
+const extractTargetsFromAnalysis = (analysis: any): string[] => {
+  if (typeof analysis === 'string') {
+    const targetMatches = analysis.match(/target.*?(\$?[0-9]+\.?[0-9]*)/gi);
+    return targetMatches ? targetMatches.slice(0, 3) : ['Target levels to be determined from analysis'];
+  }
+  return analysis?.targets || ['Target levels to be determined from analysis'];
+};
+
+const extractStopLossFromAnalysis = (analysis: any): string => {
+  if (typeof analysis === 'string') {
+    const stopMatch = analysis.match(/stop.*?loss.*?(\$?[0-9]+\.?[0-9]*)/i);
+    return stopMatch ? stopMatch[0] : 'Stop loss to be determined from analysis';
+  }
+  return analysis?.stop_loss || 'Stop loss to be determined from analysis';
+};
+
+const extractRiskRewardFromAnalysis = (analysis: any): string => {
+  if (typeof analysis === 'string') {
+    const rrMatch = analysis.match(/risk.*?reward.*?([0-9]:?[0-9]*)/i);
+    return rrMatch ? rrMatch[1] : '1:2';
+  }
+  return analysis?.risk_reward || '1:2';
+};
+
 interface AnalysisResult {
   symbol: string;
   fundamentals: any;
@@ -72,15 +105,16 @@ export const ComprehensiveChartAnalysis = () => {
         );
 
         // Parse analysis for structured data
+        const analysisText = chartAnalysis.analysis || chartAnalysis;
         const parsedResult: AnalysisResult = {
           symbol: symbol.toUpperCase(),
           fundamentals: fundamentalsData,
-          analysis: chartAnalysis.analysis,
-          confidence: 75, // Default confidence
-          entries: ['Entry levels will be parsed from analysis'],
-          targets: ['Target levels will be parsed from analysis'],
-          stopLoss: 'Stop loss from analysis',
-          riskReward: '1:3'
+          analysis: typeof analysisText === 'string' ? analysisText : JSON.stringify(analysisText),
+          confidence: 85,
+          entries: extractEntriesFromAnalysis(analysisText),
+          targets: extractTargetsFromAnalysis(analysisText),
+          stopLoss: extractStopLossFromAnalysis(analysisText),
+          riskReward: extractRiskRewardFromAnalysis(analysisText)
         };
 
         setAnalysisResult(parsedResult);
