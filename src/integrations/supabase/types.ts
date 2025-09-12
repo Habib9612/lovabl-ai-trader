@@ -126,6 +126,57 @@ export type Database = {
           },
         ]
       }
+      ai_training_models: {
+        Row: {
+          accuracy: number | null
+          created_at: string | null
+          document_count: number | null
+          features: string[] | null
+          id: string
+          model_id: string
+          parameters: Json | null
+          performance_metrics: Json | null
+          predictions: Json | null
+          strategy_name: string
+          strategy_type: string
+          training_duration_seconds: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string | null
+          document_count?: number | null
+          features?: string[] | null
+          id?: string
+          model_id: string
+          parameters?: Json | null
+          performance_metrics?: Json | null
+          predictions?: Json | null
+          strategy_name: string
+          strategy_type: string
+          training_duration_seconds?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string | null
+          document_count?: number | null
+          features?: string[] | null
+          id?: string
+          model_id?: string
+          parameters?: Json | null
+          performance_metrics?: Json | null
+          predictions?: Json | null
+          strategy_name?: string
+          strategy_type?: string
+          training_duration_seconds?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           asset_type: string
@@ -1128,6 +1179,45 @@ export type Database = {
           strategy_type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      training_documents: {
+        Row: {
+          content_summary: string | null
+          created_at: string | null
+          file_size: number | null
+          file_type: string
+          id: string
+          name: string
+          processed: boolean | null
+          storage_path: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content_summary?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_type: string
+          id?: string
+          name: string
+          processed?: boolean | null
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content_summary?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          name?: string
+          processed?: boolean | null
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

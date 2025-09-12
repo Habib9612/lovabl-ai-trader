@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Brain, FileText, BookOpen, Target, Trash2, Download } from 'lucide-react';
+import { Upload, Brain, FileText, BookOpen, Target, Trash2, Download, Play, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TrainingDocument {
   id: string;
@@ -19,15 +20,30 @@ interface TrainingDocument {
   size: number;
   uploadedAt: Date;
   processed: boolean;
+  content?: string;
 }
 
 interface TrainingStrategy {
   id: string;
+  model_id?: string;
   name: string;
   description: string;
   documentsCount: number;
   accuracy?: number;
   lastTrained?: Date;
+  performance_metrics?: {
+    sharpe_ratio: number;
+    max_drawdown: number;
+    win_rate: number;
+    avg_return: number;
+  };
+  predictions?: Array<{
+    symbol: string;
+    signal: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    target_price: number;
+    stop_loss: number;
+  }>;
 }
 
 const predefinedStrategies = [
@@ -40,36 +56,57 @@ const predefinedStrategies = [
 ];
 
 export const AITraining = () => {
+  const { user } = useAuth();
   const [selectedStrategy, setSelectedStrategy] = useState<string>('');
   const [customStrategyName, setCustomStrategyName] = useState('');
   const [customStrategyDescription, setCustomStrategyDescription] = useState('');
   const [documents, setDocuments] = useState<TrainingDocument[]>([]);
-  const [trainedStrategies, setTrainedStrategies] = useState<TrainingStrategy[]>([
-    {
-      id: '1',
-      name: 'ICT Concepts',
-      description: 'Inner Circle Trader methodology',
-      documentsCount: 5,
-      accuracy: 87,
-      lastTrained: new Date('2024-01-15')
-    },
-    {
-      id: '2',
-      name: 'Elliott Wave Analysis',
-      description: 'Wave pattern recognition',
-      documentsCount: 3,
-      accuracy: 72,
-      lastTrained: new Date('2024-01-10')
-    }
-  ]);
+  const [trainedStrategies, setTrainedStrategies] = useState<TrainingStrategy[]>([]);
   const [uploading, setUploading] = useState(false);
   const [training, setTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadTrainedModels();
+    }
+  }, [user]);
+
+  const loadTrainedModels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_training_models')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const strategies: TrainingStrategy[] = data.map(model => ({
+        id: model.id,
+        model_id: model.model_id,
+        name: model.strategy_name,
+        description: `${model.strategy_type} strategy`,
+        documentsCount: model.document_count || 0,
+        accuracy: model.accuracy ? Math.round(model.accuracy * 100) : undefined,
+        lastTrained: new Date(model.created_at),
+        performance_metrics: model.performance_metrics as any,
+        predictions: model.predictions as any
+      }));
+
+      setTrainedStrategies(strategies);
+    } catch (error) {
+      console.error('Error loading trained models:', error);
+      toast.error('Failed to load trained models');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || !user) return;
 
     setUploading(true);
     
@@ -86,26 +123,45 @@ export const AITraining = () => {
           continue;
         }
 
-        // Simulate file processing (in real app, you'd upload to Supabase Storage)
+        // Read file content for processing
+        const content = await readFileContent(file);
+        
         const newDoc: TrainingDocument = {
           id: Math.random().toString(36).substr(2, 9),
           name: file.name,
           type: file.type.includes('pdf') ? 'pdf' : file.type.includes('csv') ? 'csv' : 'text',
           size: file.size,
           uploadedAt: new Date(),
-          processed: false
+          processed: false,
+          content: content
         };
 
         setDocuments(prev => [...prev, newDoc]);
 
-        // Simulate processing
+        // Store document in database
+        const { error } = await supabase
+          .from('training_documents')
+          .insert({
+            user_id: user.id,
+            name: file.name,
+            file_type: newDoc.type,
+            file_size: file.size,
+            content_summary: content.substring(0, 500),
+            processed: true
+          });
+
+        if (error) {
+          console.error('Error storing document:', error);
+        }
+
+        // Mark as processed
         setTimeout(() => {
           setDocuments(prev => 
             prev.map(doc => 
               doc.id === newDoc.id ? { ...doc, processed: true } : doc
             )
           );
-        }, 2000);
+        }, 1000);
       }
 
       toast.success(`${files.length} file(s) uploaded successfully`);
@@ -116,8 +172,20 @@ export const AITraining = () => {
     }
   };
 
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        resolve(content || '');
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
+
   const startTraining = async () => {
-    if (!selectedStrategy) {
+    if (!selectedStrategy || !user) {
       toast.error('Please select a strategy');
       return;
     }
@@ -131,12 +199,12 @@ export const AITraining = () => {
     setTrainingProgress(0);
 
     try {
-      // Simulate training progress
+      // Progress simulation
       const interval = setInterval(() => {
         setTrainingProgress(prev => {
-          if (prev >= 100) {
+          if (prev >= 90) {
             clearInterval(interval);
-            return 100;
+            return 90;
           }
           return prev + 10;
         });
@@ -146,12 +214,30 @@ export const AITraining = () => {
         ? customStrategyName 
         : predefinedStrategies.find(s => s.id === selectedStrategy)?.name || 'Unknown Strategy';
 
-      // Use Gemini AI for training analysis
-      const { data, error } = await supabase.functions.invoke('gemini-ai-analysis', {
+      const strategyDescription = selectedStrategy === 'custom' 
+        ? customStrategyDescription 
+        : predefinedStrategies.find(s => s.id === selectedStrategy)?.description || '';
+
+      // Prepare training data
+      const trainingData = {
+        documents: documents.filter(d => d.processed).map(doc => ({
+          id: doc.id,
+          name: doc.name,
+          content: doc.content || '',
+          type: doc.type
+        })),
+        strategy: {
+          name: strategyName,
+          type: selectedStrategy,
+          description: strategyDescription
+        }
+      };
+
+      // Call AI training function
+      const { data, error } = await supabase.functions.invoke('ai-training', {
         body: {
-          type: 'training',
-          data: documents.filter(d => d.processed),
-          prompt: `Train AI strategy for ${strategyName}: ${selectedStrategy === 'custom' ? customStrategyDescription : predefinedStrategies.find(s => s.id === selectedStrategy)?.description}`
+          action: 'train',
+          data: trainingData
         }
       });
 
@@ -159,24 +245,45 @@ export const AITraining = () => {
         throw new Error(error.message);
       }
 
-      const newStrategy: TrainingStrategy = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: strategyName,
-        description: selectedStrategy === 'custom' 
-          ? customStrategyDescription 
-          : predefinedStrategies.find(s => s.id === selectedStrategy)?.description || '',
-        documentsCount: documents.filter(d => d.processed).length,
-        lastTrained: new Date()
-      };
+      if (!data.success) {
+        throw new Error(data.error || 'Training failed');
+      }
 
-      setTrainedStrategies(prev => [...prev, newStrategy]);
+      clearInterval(interval);
+      setTrainingProgress(100);
+
+      // Store training result in database
+      const { error: dbError } = await supabase
+        .from('ai_training_models')
+        .insert({
+          user_id: user.id,
+          model_id: data.result.model_id,
+          strategy_name: strategyName,
+          strategy_type: selectedStrategy,
+          accuracy: data.result.accuracy,
+          parameters: data.result.parameters,
+          features: data.result.features,
+          performance_metrics: data.result.performance_metrics,
+          predictions: data.result.predictions,
+          document_count: documents.filter(d => d.processed).length
+        });
+
+      if (dbError) {
+        console.error('Error storing training result:', dbError);
+      }
+
+      // Refresh trained models
+      await loadTrainedModels();
+      
+      // Reset form
       setDocuments([]);
       setSelectedStrategy('');
       setCustomStrategyName('');
       setCustomStrategyDescription('');
       
-      toast.success('AI training completed successfully!');
+      toast.success(`AI model trained successfully! Accuracy: ${Math.round(data.result.accuracy * 100)}%`);
     } catch (error) {
+      console.error('Training error:', error);
       toast.error('Training failed. Please try again.');
     } finally {
       setTraining(false);
@@ -369,45 +476,131 @@ export const AITraining = () => {
             </TabsContent>
 
             <TabsContent value="manage" className="space-y-4">
-              <div className="space-y-4">
-                {trainedStrategies.map((strategy) => (
-                  <Card key={strategy.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">{strategy.name}</h3>
-                            {strategy.accuracy && (
-                              <Badge variant="outline">
-                                {strategy.accuracy}% accuracy
-                              </Badge>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i}>
+                      <CardContent className="p-6">
+                        <div className="animate-pulse space-y-3">
+                          <div className="h-4 bg-muted rounded w-1/3"></div>
+                          <div className="h-3 bg-muted rounded w-2/3"></div>
+                          <div className="h-3 bg-muted rounded w-1/2"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {trainedStrategies.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No trained models yet</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Upload some documents and train your first AI trading strategy.
+                        </p>
+                        <Button onClick={() => {
+                          const uploadTab = document.querySelector('[value="upload"]') as HTMLElement;
+                          uploadTab?.click();
+                        }}>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Get Started
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    trainedStrategies.map((strategy) => (
+                      <Card key={strategy.id}>
+                        <CardContent className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold text-lg">{strategy.name}</h3>
+                                  {strategy.accuracy && (
+                                    <Badge variant="outline">
+                                      {strategy.accuracy}% accuracy
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-muted-foreground">{strategy.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <span>{strategy.documentsCount} documents</span>
+                                  {strategy.lastTrained && (
+                                    <span>Last trained: {strategy.lastTrained.toLocaleDateString()}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm">
+                                  <Download className="h-4 w-4 mr-1" />
+                                  Export
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Play className="h-4 w-4 mr-1" />
+                                  Deploy
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {strategy.performance_metrics && (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                                <div className="text-center">
+                                  <div className="text-sm text-muted-foreground">Win Rate</div>
+                                  <div className="font-semibold">{Math.round(strategy.performance_metrics.win_rate * 100)}%</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-sm text-muted-foreground">Sharpe Ratio</div>
+                                  <div className="font-semibold">{strategy.performance_metrics.sharpe_ratio.toFixed(2)}</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-sm text-muted-foreground">Max Drawdown</div>
+                                  <div className="font-semibold">{Math.round(strategy.performance_metrics.max_drawdown * 100)}%</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-sm text-muted-foreground">Avg Return</div>
+                                  <div className="font-semibold">{Math.round(strategy.performance_metrics.avg_return * 100)}%</div>
+                                </div>
+                              </div>
+                            )}
+
+                            {strategy.predictions && strategy.predictions.length > 0 && (
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <BarChart3 className="h-4 w-4" />
+                                  <span className="font-medium">Latest Predictions</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {strategy.predictions.slice(0, 6).map((prediction, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-2 border rounded">
+                                      <span className="font-mono text-sm">{prediction.symbol}</span>
+                                      <div className="flex items-center gap-2">
+                                        <Badge 
+                                          variant={prediction.signal === 'BUY' ? 'default' : prediction.signal === 'SELL' ? 'destructive' : 'secondary'}
+                                          className="text-xs"
+                                        >
+                                          {prediction.signal}
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground">
+                                          {Math.round(prediction.confidence * 100)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
                             )}
                           </div>
-                          <p className="text-muted-foreground">{strategy.description}</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{strategy.documentsCount} documents</span>
-                            {strategy.lastTrained && (
-                              <span>Last trained: {strategy.lastTrained.toLocaleDateString()}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            Export
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Retrain
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
