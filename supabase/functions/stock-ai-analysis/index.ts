@@ -8,11 +8,8 @@ const corsHeaders = {
 
 // Fetch comprehensive market data for the symbol
 async function fetchComprehensiveData(symbol: string) {
-  const finnhubApiKey = Deno.env.get('FINNHUB_API_KEY');
-  
-  if (!finnhubApiKey) {
-    throw new Error('Finnhub API key not configured');
-  }
+  const finnhubApiKey = Deno.env.get('FINNHUB_API_KEY') || '';
+  // If the Finnhub key is missing, continue with safe defaults.
 
   const cleanSymbol = symbol.trim().toUpperCase();
   const now = Math.floor(Date.now() / 1000);
