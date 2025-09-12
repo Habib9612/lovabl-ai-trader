@@ -29,7 +29,7 @@ export type Database = {
           symbol: string
           timeframe: string
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           analysis_type?: string | null
@@ -45,7 +45,7 @@ export type Database = {
           symbol: string
           timeframe: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           analysis_type?: string | null
@@ -61,7 +61,7 @@ export type Database = {
           symbol?: string
           timeframe?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -141,7 +141,7 @@ export type Database = {
           strategy_type: string
           training_duration_seconds: number | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           accuracy?: number | null
@@ -157,7 +157,7 @@ export type Database = {
           strategy_type: string
           training_duration_seconds?: number | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           accuracy?: number | null
@@ -173,7 +173,7 @@ export type Database = {
           strategy_type?: string
           training_duration_seconds?: number | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -833,7 +833,21 @@ export type Database = {
             foreignKeyName: "fk_signal_followers_signal_id"
             columns: ["signal_id"]
             isOneToOne: false
+            referencedRelation: "public_signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_signal_followers_signal_id"
+            columns: ["signal_id"]
+            isOneToOne: false
             referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signal_followers_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "public_signals"
             referencedColumns: ["id"]
           },
           {
@@ -1078,18 +1092,39 @@ export type Database = {
           },
         ]
       }
-      "tradin ai": {
+      trading_ai_models: {
         Row: {
           created_at: string
-          id: number
+          id: string
+          is_active: boolean | null
+          model_name: string
+          model_type: string
+          performance_metrics: Json | null
+          training_data: Json | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: string
+          is_active?: boolean | null
+          model_name: string
+          model_type?: string
+          performance_metrics?: Json | null
+          training_data?: Json | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: string
+          is_active?: boolean | null
+          model_name?: string
+          model_type?: string
+          performance_metrics?: Json | null
+          training_data?: Json | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1193,7 +1228,7 @@ export type Database = {
           processed: boolean | null
           storage_path: string | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           content_summary?: string | null
@@ -1205,7 +1240,7 @@ export type Database = {
           processed?: boolean | null
           storage_path?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           content_summary?: string | null
@@ -1217,7 +1252,7 @@ export type Database = {
           processed?: boolean | null
           storage_path?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1359,9 +1394,93 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_signals: {
+        Row: {
+          asset_id: string | null
+          confidence_level: number | null
+          created_at: string | null
+          entry_price: number | null
+          expires_at: string | null
+          followers_count: number | null
+          id: string | null
+          reasoning: string | null
+          signal_type: string | null
+          status: string | null
+          stop_loss: number | null
+          success_rate: number | null
+          target_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          entry_price?: number | null
+          expires_at?: string | null
+          followers_count?: number | null
+          id?: string | null
+          reasoning?: string | null
+          signal_type?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          success_rate?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          entry_price?: number | null
+          expires_at?: string | null
+          followers_count?: number | null
+          id?: string | null
+          reasoning?: string | null
+          signal_type?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          success_rate?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_signals_asset_id"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      get_public_signals: {
+        Args: { limit_count?: number }
+        Returns: {
+          asset_name: string
+          asset_symbol: string
+          confidence_level: number
+          created_at: string
+          entry_price: number
+          expires_at: string
+          followers_count: number
+          id: string
+          reasoning: string
+          signal_type: string
+          status: string
+          stop_loss: number
+          success_rate: number
+          target_price: number
+        }[]
+      }
       get_user_subscription_tier: {
         Args: { user_id_param: string }
         Returns: {
