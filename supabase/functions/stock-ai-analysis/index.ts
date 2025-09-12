@@ -140,6 +140,42 @@ serve(async (req) => {
     const marketData = await fetchComprehensiveData(symbol);
     const technicals = calculateTechnicals(marketData.candles);
 
+    // Get smart AI analysis
+    let smartAnalysis = null;
+    try {
+      if (marketData.candles && marketData.candles.c && marketData.candles.c.length > 50) {
+        const prices = marketData.candles.c;
+        const volumes = marketData.candles.v || [];
+        const smartMarketData = {
+          symbol,
+          price: marketData.quote?.c || 0,
+          change: marketData.quote?.dp || 0,
+          volume: marketData.quote?.v || 0,
+          market_cap: marketData.profile?.marketCapitalization,
+          pe_ratio: marketData.profile?.peBasicExclExtraTTM,
+          dividend_yield: marketData.profile?.dividendYield,
+          high_52w: marketData.quote?.h,
+          low_52w: marketData.quote?.l
+        };
+
+        const smartResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/smart-ai-model`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ symbol, prices, volumes, marketData: smartMarketData })
+        });
+
+        if (smartResponse.ok) {
+          smartAnalysis = await smartResponse.json();
+          console.log('Smart AI analysis completed:', smartAnalysis);
+        }
+      }
+    } catch (error) {
+      console.warn('Smart AI analysis failed, continuing with basic analysis:', error);
+    }
+
 // Calculate additional metrics with safe fallbacks
 const currentPrice = Number(marketData.quote?.c ?? 0);
 const yearHighRaw = Number(marketData.quote?.h ?? 0);
@@ -506,14 +542,15 @@ Respond with a JSON object containing:
       technicals: technicals
     };
 
-    return new Response(JSON.stringify({
-      success: true,
-      analysis: analysisResult,
-      symbol: symbol.toUpperCase(),
-      timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      return new Response(JSON.stringify({
+        success: true,
+        analysis: analysisResult,
+        smartAnalysis,
+        symbol: symbol.toUpperCase(),
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
 
   } catch (error) {
     console.error('Error in stock-ai-analysis function:', error);
