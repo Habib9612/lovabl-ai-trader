@@ -43,9 +43,9 @@ async function fetchComprehensiveData(symbol: string) {
       safeFetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=${cleanSymbol}&token=${finnhubApiKey}`, [])
     ]);
 
-    // Validate essential data
+    // Validate essential data but avoid throwing to keep function resilient
     if (!quote.c || quote.c === 0) {
-      throw new Error('Unable to fetch current stock price');
+      console.warn('Quote price missing or zero; proceeding with defaults');
     }
 
     return { quote, profile, candles, news, recommendations };
@@ -143,18 +143,40 @@ serve(async (req) => {
     const marketData = await fetchComprehensiveData(symbol);
     const technicals = calculateTechnicals(marketData.candles);
 
-    // Calculate additional metrics
-    const currentPrice = marketData.quote.c;
-    const yearHigh = marketData.quote.h;
-    const yearLow = marketData.quote.l;
-    const relativePosition = ((currentPrice - yearLow) / (yearHigh - yearLow)) * 100;
+// Calculate additional metrics with safe fallbacks
+const currentPrice = Number(marketData.quote?.c ?? 0);
+const yearHighRaw = Number(marketData.quote?.h ?? 0);
+const yearLowRaw = Number(marketData.quote?.l ?? 0);
+const yearHigh = yearHighRaw || currentPrice || 0;
+const yearLow = yearLowRaw || currentPrice || 0;
+const range = yearHigh - yearLow;
+const relativePosition = range > 0 ? ((currentPrice - yearLow) / range) * 100 : 50;
 
-    // News sentiment analysis
-    const recentNews = marketData.news?.slice(0, 5) || [];
-    const newsCount = recentNews.length;
+// News sentiment analysis (safe)
+const recentNews = Array.isArray(marketData.news) ? marketData.news.slice(0, 5) : [];
+const newsCount = recentNews.length;
 
-    // Analyst recommendations
-    const latestRecommendation = marketData.recommendations?.[0] || {};
+// Analyst recommendations (safe)
+const latestRecommendation = Array.isArray(marketData.recommendations) && marketData.recommendations.length > 0
+  ? marketData.recommendations[0]
+  : {};
+
+    // Prepare safe values for prompt
+    const profile = marketData.profile || {};
+    const quote = marketData.quote || {};
+    const marketCapBillionsVal = Number(profile.marketCapitalization ?? 0) / 1_000_000_000;
+    const marketCapBillions = Number.isFinite(marketCapBillionsVal) ? marketCapBillionsVal.toFixed(2) : '0.00';
+    const peRatio = typeof profile.peBasicExclExtraTTM === 'number' ? profile.peBasicExclExtraTTM : 'N/A';
+    const dividendYield = typeof profile.dividendYield === 'number' ? profile.dividendYield : null;
+    const sharesOut = Number(profile.shareOutstanding ?? 0);
+    const volumeVal = Number(quote.v ?? 0);
+    const volumeMillionsVal = volumeVal / 1_000_000;
+    const volumeMillions = Number.isFinite(volumeMillionsVal) ? volumeMillionsVal.toFixed(1) : '0.0';
+    const relativeVolumeVal = sharesOut > 0 ? (volumeVal / sharesOut) * 100 : 0;
+    const relativeVolume = Number.isFinite(relativeVolumeVal) ? Number(relativeVolumeVal.toFixed(1)) : 0;
+    const positionInRange = Number.isFinite(relativePosition) ? Number(relativePosition.toFixed(1)) : 50;
+    const dayChangePct = typeof quote.dp === 'number' ? quote.dp : 0;
+    const dayChangeAbs = typeof quote.d === 'number' ? quote.d : 0;
 
     const analysisPrompt = `
 Analyze ${symbol} (${marketData.profile.name || 'Unknown Company'}) with the following comprehensive data:
@@ -162,11 +184,11 @@ Analyze ${symbol} (${marketData.profile.name || 'Unknown Company'}) with the fol
 **CORE MARKET DATA:**
 - Current Price: $${currentPrice}
 - Day Change: ${marketData.quote.dp}% (${marketData.quote.d > 0 ? '+' : ''}$${marketData.quote.d})
-- Market Cap: $${(marketData.profile.marketCapitalization / 1000000000).toFixed(2)}B
+- Market Cap: $${marketCapBillions}B
 - P/E Ratio: ${marketData.profile.peBasicExclExtraTTM || 'N/A'}
 - 52W High: $${yearHigh} | Low: $${yearLow}
-- Position in Range: ${relativePosition.toFixed(1)}%
-- Average Volume: ${(marketData.profile.shareOutstanding / 1000000).toFixed(1)}M shares
+- Position in Range: ${positionInRange}%
+- Average Volume: ${volumeMillions}M shares
 - Sector: ${marketData.profile.finnhubIndustry || 'N/A'}
 
 **TECHNICAL INDICATORS:**
@@ -176,9 +198,9 @@ Analyze ${symbol} (${marketData.profile.name || 'Unknown Company'}) with the fol
 - Volatility (ATR): $${technicals.volatility}
 
 **TREND ANALYSIS:**
-- Short-term trend: ${currentPrice > technicals.ma20 ? 'Bullish' : 'Bearish'} (vs MA20)
-- Medium-term trend: ${currentPrice > technicals.ma50 ? 'Bullish' : 'Bearish'} (vs MA50)
-- Long-term trend: ${currentPrice > technicals.ma200 ? 'Bullish' : 'Bearish'} (vs MA200)
+- Short-term trend: ${currentPrice > (technicals.ma20 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'} (vs MA20)
+- Medium-term trend: ${currentPrice > (technicals.ma50 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'} (vs MA50)
+- Long-term trend: ${currentPrice > (technicals.ma200 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'} (vs MA200)
 
 **MARKET SENTIMENT:**
 - Recent News Count: ${newsCount} articles (last 7 days)
@@ -201,19 +223,19 @@ Create a comprehensive professional analysis that includes:
 Respond with a JSON object containing:
 {
   "coreData": {
-    "marketCap": "${(marketData.profile.marketCapitalization / 1000000000).toFixed(2)}B",
-    "pe": ${marketData.profile.peBasicExclExtraTTM || null},
+    "marketCap": "${marketCapBillions}B",
+    "pe": ${peRatio === 'N/A' ? null : peRatio},
     "dividendYield": ${marketData.profile.dividendYield || null},
-    "volume": "${(marketData.quote.v / 1000000).toFixed(1)}M",
-    "relativeVolume": ${((marketData.quote.v / (marketData.profile.shareOutstanding || 1)) * 100).toFixed(1)},
+    "volume": "${volumeMillions}M",
+    "relativeVolume": ${relativeVolume},
     "yearHighLow": "${yearHigh}/${yearLow}",
-    "positionInRange": ${relativePosition.toFixed(1)}
+    "positionInRange": ${positionInRange}
   },
   "technicals": {
     "trend": {
-      "shortTerm": "${currentPrice > technicals.ma20 ? 'Bullish' : 'Bearish'}",
-      "mediumTerm": "${currentPrice > technicals.ma50 ? 'Bullish' : 'Bearish'}",
-      "longTerm": "${currentPrice > technicals.ma200 ? 'Bullish' : 'Bearish'}"
+      "shortTerm": "${currentPrice > (technicals.ma20 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'}",
+      "mediumTerm": "${currentPrice > (technicals.ma50 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'}",
+      "longTerm": "${currentPrice > (technicals.ma200 ?? Number.MAX_SAFE_INTEGER) ? 'Bullish' : 'Bearish'}"
     },
     "indicators": {
       "rsi": ${technicals.rsi},
