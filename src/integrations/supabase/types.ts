@@ -177,6 +177,51 @@ export type Database = {
         }
         Relationships: []
       }
+      api_logs: {
+        Row: {
+          correlation_id: string
+          created_at: string | null
+          endpoint: string
+          error_details: Json | null
+          execution_time_ms: number | null
+          id: string
+          method: string
+          params: Json | null
+          provider_used: string | null
+          response_body: Json | null
+          response_status: number | null
+          user_id: string | null
+        }
+        Insert: {
+          correlation_id: string
+          created_at?: string | null
+          endpoint: string
+          error_details?: Json | null
+          execution_time_ms?: number | null
+          id?: string
+          method: string
+          params?: Json | null
+          provider_used?: string | null
+          response_body?: Json | null
+          response_status?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          correlation_id?: string
+          created_at?: string | null
+          endpoint?: string
+          error_details?: Json | null
+          execution_time_ms?: number | null
+          id?: string
+          method?: string
+          params?: Json | null
+          provider_used?: string | null
+          response_body?: Json | null
+          response_status?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           asset_type: string
@@ -207,6 +252,48 @@ export type Database = {
           name?: string
           sector?: string | null
           symbol?: string
+        }
+        Relationships: []
+      }
+      backtests: {
+        Row: {
+          completed_at: string | null
+          correlation_id: string | null
+          created_at: string | null
+          error_details: Json | null
+          id: string
+          metrics: Json | null
+          params: Json
+          result_url: string | null
+          status: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          error_details?: Json | null
+          id?: string
+          metrics?: Json | null
+          params?: Json
+          result_url?: string | null
+          status?: string
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          error_details?: Json | null
+          id?: string
+          metrics?: Json | null
+          params?: Json
+          result_url?: string | null
+          status?: string
+          symbol?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -843,20 +930,6 @@ export type Database = {
             referencedRelation: "signals"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "signal_followers_signal_id_fkey"
-            columns: ["signal_id"]
-            isOneToOne: false
-            referencedRelation: "public_signals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "signal_followers_signal_id_fkey"
-            columns: ["signal_id"]
-            isOneToOne: false
-            referencedRelation: "signals"
-            referencedColumns: ["id"]
-          },
         ]
       }
       signals: {
@@ -914,13 +987,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_signals_asset_id"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "signals_asset_id_fkey"
             columns: ["asset_id"]
             isOneToOne: false
             referencedRelation: "assets"
@@ -1446,13 +1512,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_signals_asset_id"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "signals_asset_id_fkey"
             columns: ["asset_id"]
             isOneToOne: false
             referencedRelation: "assets"

@@ -28,8 +28,8 @@ interface Signal {
   success_rate: number;
   created_at: string;
   expires_at: string;
-  profiles: any;
-  assets: any;
+  profiles?: any;
+  assets?: any;
   signal_followers?: any[];
 }
 
@@ -67,9 +67,8 @@ const Signals = () => {
         .from('signals')
         .select(`
           *,
-          profiles:user_id (display_name),
-          assets:asset_id (symbol, name),
-          signal_followers:signal_followers!signal_id (follower_id)
+          assets!fk_signals_asset_id(symbol, name),
+          signal_followers!fk_signal_followers_signal_id(follower_id)
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
@@ -92,7 +91,7 @@ const Signals = () => {
         .from('signals')
         .select(`
           *,
-          assets:asset_id (symbol, name)
+          assets!fk_signals_asset_id(symbol, name)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -111,10 +110,9 @@ const Signals = () => {
       const { data, error } = await supabase
         .from('signal_followers')
         .select(`
-          signals:signal_id (
+          signals!fk_signal_followers_signal_id(
             *,
-            profiles:user_id (display_name),
-            assets:asset_id (symbol, name)
+            assets!fk_signals_asset_id(symbol, name)
           )
         `)
         .eq('follower_id', user.id);
