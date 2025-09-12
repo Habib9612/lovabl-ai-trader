@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_results: {
+        Row: {
+          analysis_type: string | null
+          asset_id: string | null
+          confidence: number | null
+          created_at: string | null
+          id: number
+          llm_output: Json
+          metadata: Json | null
+          raw_candles: Json | null
+          raw_quote: Json | null
+          sentiment: string | null
+          symbol: string
+          timeframe: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_type?: string | null
+          asset_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: never
+          llm_output: Json
+          metadata?: Json | null
+          raw_candles?: Json | null
+          raw_quote?: Json | null
+          sentiment?: string | null
+          symbol: string
+          timeframe: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_type?: string | null
+          asset_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: never
+          llm_output?: Json
+          metadata?: Json | null
+          raw_candles?: Json | null
+          raw_quote?: Json | null
+          sentiment?: string | null
+          symbol?: string
+          timeframe?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_results_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_signals: {
         Row: {
           asset_id: string
