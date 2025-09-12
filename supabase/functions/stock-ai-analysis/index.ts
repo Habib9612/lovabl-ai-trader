@@ -250,7 +250,7 @@ Respond with a JSON object containing:
         'X-Title': 'Trading AI Dashboard'
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4o',
+        model: 'openai/gpt-oss-120b',
         messages: [
           {
             role: 'system',

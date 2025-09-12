@@ -225,7 +225,74 @@ async function fetchStockData(symbol: string): Promise<{prices: number[], dates:
   }
 }
 
-function generateAnalysis(backtest: BacktestResult, symbol: string, strategy: string): any {
+async function generateAnalysis(backtest: BacktestResult, symbol: string, strategy: string): Promise<any> {
+  // Call OpenRouter API for AI analysis
+  const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
+  if (!openRouterApiKey) {
+    console.log('OpenRouter API key not found, using basic analysis');
+    return generateBasicAnalysis(backtest, symbol, strategy);
+  }
+
+  try {
+    const totalReturnPercent = (backtest.total_return * 100).toFixed(2);
+    const sharpeRatio = backtest.sharpe_ratio.toFixed(2);
+    const maxDrawdownPercent = (backtest.max_drawdown * 100).toFixed(2);
+    const winRatePercent = (backtest.win_rate * 100).toFixed(2);
+
+    const aiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openRouterApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert algorithmic trading analyst. Analyze backtesting results and provide detailed insights on strategy performance, risk metrics, and optimization recommendations. Return your response as a JSON object with "summary", "key_insights", "risk_factors", and "recommendations" fields.'
+          },
+          {
+            role: 'user',
+            content: `Analyze this algorithmic trading backtest for ${symbol} using ${strategy} strategy:
+            
+            Performance Metrics:
+            - Total Return: ${totalReturnPercent}%
+            - Sharpe Ratio: ${sharpeRatio}
+            - Max Drawdown: ${maxDrawdownPercent}%
+            - Win Rate: ${winRatePercent}%
+            - Total Trades: ${backtest.total_trades}
+            
+            Provide detailed analysis including performance evaluation, risk assessment, and strategy optimization suggestions.`
+          }
+        ],
+        max_completion_tokens: 1500,
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('OpenRouter API error:', aiResponse.status, errorText);
+      return generateBasicAnalysis(backtest, symbol, strategy);
+    }
+
+    const aiData = await aiResponse.json();
+    const aiContent = aiData.choices[0].message.content;
+
+    // Try to parse as JSON, fallback to basic analysis if failed
+    try {
+      return JSON.parse(aiContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response as JSON, using basic analysis');
+      return generateBasicAnalysis(backtest, symbol, strategy);
+    }
+  } catch (error) {
+    console.error('Error calling OpenRouter API:', error);
+    return generateBasicAnalysis(backtest, symbol, strategy);
+  }
+}
+
+function generateBasicAnalysis(backtest: BacktestResult, symbol: string, strategy: string): any {
   const totalReturnPercent = (backtest.total_return * 100).toFixed(2);
   const sharpeRatio = backtest.sharpe_ratio.toFixed(2);
   const maxDrawdownPercent = (backtest.max_drawdown * 100).toFixed(2);
@@ -295,7 +362,7 @@ serve(async (req) => {
     }
 
     // Generate analysis
-    const analysis = generateAnalysis(backtest, symbol, strategy);
+    const analysis = await generateAnalysis(backtest, symbol, strategy);
 
     const response = {
       symbol,
