@@ -18,28 +18,40 @@ async function fetchComprehensiveData(symbol: string) {
   const now = Math.floor(Date.now() / 1000);
   const oneYearAgo = now - (365 * 24 * 60 * 60);
 
+  // Helper function to safely fetch and parse JSON
+  const safeFetch = async (url: string, defaultValue: any = {}) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.warn(`Failed to fetch ${url}: ${response.status}`);
+        return defaultValue;
+      }
+      return await response.json();
+    } catch (error) {
+      console.warn(`Error fetching ${url}:`, error);
+      return defaultValue;
+    }
+  };
+
   try {
-    // Fetch multiple data sources in parallel
-    const [quoteRes, profileRes, candleRes, newsRes, recommendationRes] = await Promise.all([
-      fetch(`https://finnhub.io/api/v1/quote?symbol=${cleanSymbol}&token=${finnhubApiKey}`),
-      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${cleanSymbol}&token=${finnhubApiKey}`),
-      fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${cleanSymbol}&resolution=D&from=${oneYearAgo}&to=${now}&token=${finnhubApiKey}`),
-      fetch(`https://finnhub.io/api/v1/company-news?symbol=${cleanSymbol}&from=${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&to=${new Date().toISOString().split('T')[0]}&token=${finnhubApiKey}`),
-      fetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=${cleanSymbol}&token=${finnhubApiKey}`)
+    // Fetch multiple data sources with individual error handling
+    const [quote, profile, candles, news, recommendations] = await Promise.all([
+      safeFetch(`https://finnhub.io/api/v1/quote?symbol=${cleanSymbol}&token=${finnhubApiKey}`, { c: 0, d: 0, dp: 0, h: 0, l: 0, o: 0, pc: 0, t: 0 }),
+      safeFetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${cleanSymbol}&token=${finnhubApiKey}`, { name: cleanSymbol, marketCapitalization: 0, finnhubIndustry: 'Unknown' }),
+      safeFetch(`https://finnhub.io/api/v1/stock/candle?symbol=${cleanSymbol}&resolution=D&from=${oneYearAgo}&to=${now}&token=${finnhubApiKey}`, { c: [], h: [], l: [], v: [], s: 'no_data' }),
+      safeFetch(`https://finnhub.io/api/v1/company-news?symbol=${cleanSymbol}&from=${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&to=${new Date().toISOString().split('T')[0]}&token=${finnhubApiKey}`, []),
+      safeFetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=${cleanSymbol}&token=${finnhubApiKey}`, [])
     ]);
 
-    const [quote, profile, candles, news, recommendations] = await Promise.all([
-      quoteRes.json(),
-      profileRes.json(),
-      candleRes.json(),
-      newsRes.json(),
-      recommendationRes.json()
-    ]);
+    // Validate essential data
+    if (!quote.c || quote.c === 0) {
+      throw new Error('Unable to fetch current stock price');
+    }
 
     return { quote, profile, candles, news, recommendations };
   } catch (error) {
     console.error('Error fetching comprehensive data:', error);
-    throw new Error('Failed to fetch market data');
+    throw new Error(`Failed to fetch market data: ${error.message}`);
   }
 }
 
