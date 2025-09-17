@@ -920,13 +920,6 @@ export type Database = {
             foreignKeyName: "fk_signal_followers_signal_id"
             columns: ["signal_id"]
             isOneToOne: false
-            referencedRelation: "public_signals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_signal_followers_signal_id"
-            columns: ["signal_id"]
-            isOneToOne: false
             referencedRelation: "signals"
             referencedColumns: ["id"]
           },
@@ -1460,65 +1453,7 @@ export type Database = {
       }
     }
     Views: {
-      public_signals: {
-        Row: {
-          asset_id: string | null
-          confidence_level: number | null
-          created_at: string | null
-          entry_price: number | null
-          expires_at: string | null
-          followers_count: number | null
-          id: string | null
-          reasoning: string | null
-          signal_type: string | null
-          status: string | null
-          stop_loss: number | null
-          success_rate: number | null
-          target_price: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          asset_id?: string | null
-          confidence_level?: number | null
-          created_at?: string | null
-          entry_price?: number | null
-          expires_at?: string | null
-          followers_count?: number | null
-          id?: string | null
-          reasoning?: string | null
-          signal_type?: string | null
-          status?: string | null
-          stop_loss?: number | null
-          success_rate?: number | null
-          target_price?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          asset_id?: string | null
-          confidence_level?: number | null
-          created_at?: string | null
-          entry_price?: number | null
-          expires_at?: string | null
-          followers_count?: number | null
-          id?: string | null
-          reasoning?: string | null
-          signal_type?: string | null
-          status?: string | null
-          stop_loss?: number | null
-          success_rate?: number | null
-          target_price?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_signals_asset_id"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       get_public_signals: {
