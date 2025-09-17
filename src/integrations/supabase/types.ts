@@ -1541,7 +1541,7 @@ export type Database = {
         }[]
       }
       get_user_subscription_tier: {
-        Args: { user_id_param: string }
+        Args: { user_id_param?: string }
         Returns: {
           ai_analysis_enabled: boolean
           max_portfolios: number
