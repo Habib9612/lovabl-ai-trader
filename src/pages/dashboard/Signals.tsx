@@ -15,8 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Signal {
   id: string;
-  user_id: string;
-  asset_id: string;
+  user_id?: string; // Optional to support privacy-safe signals
+  asset_id?: string; // Optional when using RPC results
   signal_type: 'BUY' | 'SELL' | 'HOLD';
   entry_price: number;
   target_price: number;
@@ -30,6 +30,8 @@ interface Signal {
   expires_at: string;
   profiles?: any;
   assets?: any;
+  asset_symbol?: string; // From RPC results
+  asset_name?: string; // From RPC results
   signal_followers?: any[];
 }
 
@@ -63,19 +65,36 @@ const Signals = () => {
 
   const fetchSignals = async () => {
     try {
-      const { data, error } = await supabase
-        .from('signals')
-        .select(`
-          *,
-          assets!fk_signals_asset_id(symbol, name),
-          signal_followers!fk_signal_followers_signal_id(follower_id)
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const { data, error } = await supabase.rpc('get_public_signals', { limit_count: 50 });
 
       if (error) throw error;
-      setSignals((data || []) as Signal[]);
+      
+      // Transform RPC result to match Signal interface
+      const transformedSignals = (data || []).map((signal: any) => ({
+        id: signal.id,
+        user_id: undefined, // Hide user_id for privacy
+        asset_id: undefined, // Not needed for display
+        signal_type: signal.signal_type,
+        entry_price: signal.entry_price,
+        target_price: signal.target_price,
+        stop_loss: signal.stop_loss,
+        confidence_level: signal.confidence_level,
+        reasoning: signal.reasoning,
+        status: signal.status,
+        followers_count: signal.followers_count,
+        success_rate: signal.success_rate,
+        created_at: signal.created_at,
+        expires_at: signal.expires_at,
+        asset_symbol: signal.asset_symbol,
+        asset_name: signal.asset_name,
+        // Mock asset for backward compatibility
+        assets: {
+          symbol: signal.asset_symbol,
+          name: signal.asset_name
+        }
+      }));
+      
+      setSignals(transformedSignals);
     } catch (error) {
       console.error('Error fetching signals:', error);
     } finally {
@@ -107,18 +126,36 @@ const Signals = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('signal_followers')
-        .select(`
-          signals!fk_signal_followers_signal_id(
-            *,
-            assets!fk_signals_asset_id(symbol, name)
-          )
-        `)
-        .eq('follower_id', user.id);
+      const { data, error } = await supabase.rpc('get_followed_signals', { limit_count: 50 });
 
       if (error) throw error;
-      setFollowedSignals((data?.map(item => item.signals).filter(Boolean) || []) as any);
+      
+      // Transform RPC result to match Signal interface
+      const transformedSignals = (data || []).map((signal: any) => ({
+        id: signal.id,
+        user_id: undefined, // Hide user_id for privacy
+        asset_id: undefined, // Not needed for display
+        signal_type: signal.signal_type,
+        entry_price: signal.entry_price,
+        target_price: signal.target_price,
+        stop_loss: signal.stop_loss,
+        confidence_level: signal.confidence_level,
+        reasoning: signal.reasoning,
+        status: signal.status,
+        followers_count: signal.followers_count,
+        success_rate: signal.success_rate,
+        created_at: signal.created_at,
+        expires_at: signal.expires_at,
+        asset_symbol: signal.asset_symbol,
+        asset_name: signal.asset_name,
+        // Mock asset for backward compatibility
+        assets: {
+          symbol: signal.asset_symbol,
+          name: signal.asset_name
+        }
+      }));
+      
+      setFollowedSignals(transformedSignals);
     } catch (error) {
       console.error('Error fetching followed signals:', error);
     }
@@ -334,7 +371,7 @@ const Signals = () => {
           </div>
         )}
         
-        {showActions && user && signal.user_id !== user.id && (
+        {showActions && user && (
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             {isFollowing(signal.id) ? (
               <Button

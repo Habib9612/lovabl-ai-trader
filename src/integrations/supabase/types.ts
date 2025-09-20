@@ -1456,6 +1456,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_followed_signals: {
+        Args: { limit_count?: number }
+        Returns: {
+          asset_name: string
+          asset_symbol: string
+          confidence_level: number
+          created_at: string
+          entry_price: number
+          expires_at: string
+          followers_count: number
+          id: string
+          reasoning: string
+          signal_type: string
+          status: string
+          stop_loss: number
+          success_rate: number
+          target_price: number
+        }[]
+      }
       get_public_signals: {
         Args: { limit_count?: number }
         Returns: {
