@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AIAgentsProvider } from '@/contexts/AIAgentsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
@@ -9,6 +11,7 @@ import TradingAnalysis from '@/pages/dashboard/TradingAnalysis';
 import Portfolio from '@/pages/dashboard/Portfolio';
 import Education from '@/pages/dashboard/Education';
 import Watchlist from '@/pages/dashboard/Watchlist';
+import AIAgents from '@/pages/dashboard/AIAgents';
 import AIAnalytics from '@/pages/dashboard/AIAnalytics';
 import AIAnalysisDetails from '@/pages/dashboard/AIAnalysisDetails';
 import Settings from '@/pages/dashboard/Settings';
@@ -57,9 +60,10 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-background">
-          <Routes>
+      <AIAgentsProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Routes>
             {/* Public Routes */}
             <Route path="/" element={
               <PublicRoute>
@@ -81,6 +85,7 @@ function App() {
               <Route index element={<DashboardHome />} />
               <Route path="portfolio" element={<Portfolio />} />
               <Route path="trading" element={<TradingAnalysis />} />
+              <Route path="ai-agents" element={<AIAgents />} />
               <Route path="ai-analysis" element={<AIAnalysisDetails />} />
               <Route path="ai-analytics" element={<AIAnalytics />} />
               <Route path="signals" element={<Signals />} />
@@ -96,6 +101,7 @@ function App() {
           <Toaster />
         </div>
       </Router>
+      </AIAgentsProvider>
     </AuthProvider>
   );
 }
