@@ -10,7 +10,12 @@ import uuid
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from omnara import OmnaraClient
+try:
+    from omnara import OmnaraClient
+    OMNARA_AVAILABLE = True
+except ImportError:
+    OMNARA_AVAILABLE = False
+    OmnaraClient = None
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +25,11 @@ class OmnaraService:
     def __init__(self, api_key: Optional[str] = None):
         """Initialize Omnara service with API key."""
         self.api_key = api_key or os.environ.get('OMNARA_API_KEY')
-        if not self.api_key:
-            logger.warning("Omnara API key not provided. Some features may be limited.")
+        if not self.api_key or not OMNARA_AVAILABLE:
+            if not OMNARA_AVAILABLE:
+                logger.warning("Omnara package not installed. Running in simulation mode.")
+            else:
+                logger.warning("Omnara API key not provided. Some features may be limited.")
             self.client = None
         else:
             self.client = OmnaraClient(api_key=self.api_key)
