@@ -28,7 +28,7 @@ import {
   Eye,
   Zap
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,7 +61,7 @@ const navigation = [
 
 const AppSidebar = () => {
   const { state } = useSidebar();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -71,7 +71,7 @@ const AppSidebar = () => {
 
   const handleSignOut = async () => {
     try {
-      await logout();
+      await signOut();
       toast({
         title: "Success",
         description: "You have been signed out successfully.",

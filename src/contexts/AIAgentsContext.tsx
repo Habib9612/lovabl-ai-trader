@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { aiAgentsApi, AIAgent, AgentType } from '../services/api';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AIAgentsContextType {
   agents: AIAgent[];
@@ -44,7 +44,7 @@ export const AIAgentsProvider: React.FC<AIAgentsProviderProps> = ({ children }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   // Load agent types on mount
   useEffect(() => {
@@ -53,12 +53,12 @@ export const AIAgentsProvider: React.FC<AIAgentsProviderProps> = ({ children }) 
 
   // Load user agents when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       refreshAgents();
     } else {
       setAgents([]);
     }
-  }, [isAuthenticated]);
+  }, [user]);
 
   const loadAgentTypes = async () => {
     try {
@@ -71,7 +71,7 @@ export const AIAgentsProvider: React.FC<AIAgentsProviderProps> = ({ children }) 
   };
 
   const refreshAgents = async () => {
-    if (!isAuthenticated) return;
+    if (!user) return;
     
     try {
       setLoading(true);
