@@ -26,10 +26,7 @@ import {
   Settings, 
   LogOut,
   Eye,
-  Zap,
-  Target,
-  Shield,
-  Globe
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -45,32 +42,18 @@ const navigation = [
     ]
   },
   {
-    title: 'AI Tools',
+    title: 'Smart Analysis',
     items: [
-      { name: 'AI Analytics', href: '/dashboard/ai-analytics', icon: Brain },
-      { name: 'Pattern Recognition', href: '/dashboard/patterns', icon: Target },
-      { name: 'Signals', href: '/dashboard/signals', icon: Zap },
+      { name: 'Smart Trade Analytics', href: '/dashboard/ai-analytics', icon: Brain },
+      { name: 'Trading Signals', href: '/dashboard/signals', icon: Zap },
+      { name: 'Watchlist', href: '/dashboard/watchlist', icon: Eye },
     ]
   },
   {
-    title: 'Social',
+    title: 'Community & Learning',
     items: [
       { name: 'Community', href: '/dashboard/community', icon: Users },
-      { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: TrendingUp },
-    ]
-  },
-  {
-    title: 'Learning',
-    items: [
       { name: 'Education', href: '/dashboard/education', icon: BookOpen },
-      { name: 'Risk Management', href: '/dashboard/risk', icon: Shield },
-    ]
-  },
-  {
-    title: 'Markets',
-    items: [
-      { name: 'Watchlist', href: '/dashboard/watchlist', icon: Eye },
-      { name: 'Global Markets', href: '/dashboard/markets', icon: Globe },
     ]
   }
 ];
@@ -111,7 +94,7 @@ const AppSidebar = () => {
           {!collapsed && (
             <div>
               <h1 className="text-xl font-bold text-white">TradePro AI</h1>
-              <p className="text-xs text-slate-300">Professional Trading</p>
+              <p className="text-xs text-slate-300">Smart Trading Platform</p>
             </div>
           )}
         </div>

@@ -71,5 +71,5 @@ verify_jwt = false
 [functions.finviz-data]
 verify_jwt = false
 
-[functions.gemini-ai-analysis]
+[functions.smart-trade-analysis]
 verify_jwt = false

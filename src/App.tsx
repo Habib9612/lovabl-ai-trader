@@ -12,11 +12,8 @@ import Watchlist from '@/pages/dashboard/Watchlist';
 import AIAnalytics from '@/pages/dashboard/AIAnalytics';
 import AIAnalysisDetails from '@/pages/dashboard/AIAnalysisDetails';
 import Settings from '@/pages/dashboard/Settings';
-import PatternRecognition from '@/pages/dashboard/PatternRecognition';
 import Signals from '@/pages/dashboard/Signals';
 import Community from '@/pages/dashboard/Community';
-import RiskManagement from '@/pages/dashboard/RiskManagement';
-import GlobalMarkets from '@/pages/dashboard/GlobalMarkets';
 import NotFound from '@/pages/NotFound';
 
 // Protected Route Component
@@ -86,14 +83,10 @@ function App() {
               <Route path="trading" element={<TradingAnalysis />} />
               <Route path="ai-analysis" element={<AIAnalysisDetails />} />
               <Route path="ai-analytics" element={<AIAnalytics />} />
-              <Route path="patterns" element={<PatternRecognition />} />
               <Route path="signals" element={<Signals />} />
               <Route path="community" element={<Community />} />
-              <Route path="leaderboard" element={<div>Leaderboard Page - Coming Soon</div>} />
               <Route path="education" element={<Education />} />
-              <Route path="risk" element={<RiskManagement />} />
               <Route path="watchlist" element={<Watchlist />} />
-              <Route path="markets" element={<GlobalMarkets />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             
