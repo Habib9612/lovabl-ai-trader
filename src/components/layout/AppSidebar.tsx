@@ -28,7 +28,7 @@ import {
   Eye,
   Zap
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,7 +44,8 @@ const navigation = [
   {
     title: 'Smart Analysis',
     items: [
-      { name: 'Smart Trade Analytics', href: '/dashboard/ai-analytics', icon: Brain },
+      { name: 'AI Agents', href: '/dashboard/ai-agents', icon: Brain },
+      { name: 'Smart Trade Analytics', href: '/dashboard/ai-analytics', icon: BarChart3 },
       { name: 'Trading Signals', href: '/dashboard/signals', icon: Zap },
       { name: 'Watchlist', href: '/dashboard/watchlist', icon: Eye },
     ]
@@ -60,7 +61,7 @@ const navigation = [
 
 const AppSidebar = () => {
   const { state } = useSidebar();
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -69,17 +70,17 @@ const AppSidebar = () => {
   const collapsed = state === 'collapsed';
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
+    try {
+      await logout();
+      toast({
+        title: "Success",
+        description: "You have been signed out successfully.",
+      });
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to sign out. Please try again.",
-      });
-    } else {
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
       });
     }
   };

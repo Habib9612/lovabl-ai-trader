@@ -90,7 +90,7 @@ export default function AIAnalytics() {
     setIsAnalyzing(true);
     try {
       // 1. Fetch historical data
-      const fetchDataResponse = await fetch('http://localhost:8000', {
+      const fetchDataResponse = await fetch('https://8000-iq8143s2r2xp8kemogqfr-4c3d81a4.manusvm.computer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export default function AIAnalytics() {
       };
 
       // 2. Call LSTM prediction
-      const lstmResponse = await fetch('http://localhost:8000', {
+      const lstmResponse = await fetch('https://8000-iq8143s2r2xp8kemogqfr-4c3d81a4.manusvm.computer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export default function AIAnalytics() {
       }
 
       // 3. Call ICT analysis
-      const ictResponse = await fetch('http://localhost:8000', {
+      const ictResponse = await fetch('https://8000-iq8143s2r2xp8kemogqfr-4c3d81a4.manusvm.computer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ export default function AIAnalytics() {
       
       setIsAnalyzing(true);
       try {
-        const response = await fetch('http://localhost:8000', {
+        const response = await fetch('https://8000-iq8143s2r2xp8kemogqfr-4c3d81a4.manusvm.computer', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
