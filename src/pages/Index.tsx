@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
+import AIFeaturesSection from "@/components/AIFeaturesSection";
 import TrustIndicators from "@/components/TrustIndicators";
 import PerformanceSection from "@/components/PerformanceSection";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -9,9 +10,10 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-900">
       <Navigation />
       <HeroSection />
+      <AIFeaturesSection />
       <TrustIndicators />
       <PerformanceSection />
       <FeaturesSection />

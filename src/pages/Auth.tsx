@@ -6,12 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { BarChart3, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
-  const { user, signUp, signIn, loading } = useAuth();
+  const { user, register, login, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -31,21 +31,22 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
-      toast({
-        variant: "destructive",
-        title: "Sign In Error",
-        description: error.message,
-      });
-    } else {
+    try {
+      await login(email, password);
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Sign in failed';
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Sign In Error",
+        description: errorMessage,
+      });
     }
+
     
     setIsLoading(false);
   };
@@ -60,19 +61,19 @@ const Auth = () => {
     const password = formData.get('password') as string;
     const displayName = formData.get('displayName') as string;
 
-    const { error } = await signUp(email, password, displayName);
-    
-    if (error) {
-      setError(error.message);
+    try {
+      await register(email, password, displayName);
+      toast({
+        title: "Account created!",
+        description: "Welcome to TradePro AI!",
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Registration failed';
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Sign Up Error",
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Check your email to verify your account.",
+        description: errorMessage,
       });
     }
     
