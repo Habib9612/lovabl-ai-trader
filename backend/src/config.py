@@ -10,7 +10,7 @@ class Config:
     POSTGRES_USER = os.environ.get('POSTGRES_USER') or 'tradepro_user'
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD') or 'tradepro_password'
     
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI') or f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # JWT Configuration

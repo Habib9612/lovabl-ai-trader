@@ -22,7 +22,7 @@ jwt = JWTManager(app)
 mail.init_app(app)
 CORS(app, origins=["*"])  # Allow all origins for development
 
-# Register blueprints
+# Register blueprints BEFORE catch-all routes
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
@@ -35,12 +35,22 @@ app.register_blueprint(ai_agents_bp, url_prefix='/api/ai')
 with app.app_context():
     db.create_all()
 
+# API health check endpoint
+@app.route('/api/health')
+def health_check():
+    return {"status": "healthy", "message": "API is running"}, 200
+
+# Catch-all route for serving static files (MUST be last)
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
+    # Skip API routes - they should be handled by blueprints above
+    if path.startswith('api/'):
+        return {"error": "API endpoint not found"}, 404
+        
     static_folder_path = app.static_folder
     if static_folder_path is None:
-            return "Static folder not configured", 404
+        return "Static folder not configured", 404
 
     if path != "" and os.path.exists(os.path.join(static_folder_path, path)):
         return send_from_directory(static_folder_path, path)
