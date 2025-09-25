@@ -6,12 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/AuthContext';
+import { useFlaskAuth as useAuth } from '@/hooks/useFlaskAuth';
 import { BarChart3, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
-  const { user, register, login, loading } = useAuth();
+  const { user, signUp, signIn, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -32,7 +32,10 @@ const Auth = () => {
     const password = formData.get('password') as string;
 
     try {
-      await login(email, password);
+      const { error } = await signIn(email, password);
+      if (error) {
+        throw new Error(error.message);
+      }
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
@@ -62,7 +65,10 @@ const Auth = () => {
     const displayName = formData.get('displayName') as string;
 
     try {
-      await register(email, password, displayName);
+      const { error } = await signUp(email, password, displayName);
+      if (error) {
+        throw new Error(error.message);
+      }
       toast({
         title: "Account created!",
         description: "Welcome to TradePro AI!",

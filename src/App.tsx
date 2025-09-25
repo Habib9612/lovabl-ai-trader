@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { FlaskAuthProvider as AuthProvider, useFlaskAuth as useAuth } from '@/hooks/useFlaskAuth';
 import { AIAgentsProvider } from '@/contexts/AIAgentsContext';
 import { Toaster } from '@/components/ui/toaster';
 import Index from '@/pages/Index';
